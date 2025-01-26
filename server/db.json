@@ -1,0 +1,40 @@
+{
+  "tasks": [
+    {
+      "id": "task1",
+      "title": "Implement Authentication",
+      "description": "Add user login and registration functionality",
+      "status": "todo",
+      "priority": "high",
+      "createdAt": "2024-01-26T00:00:00.000Z",
+      "updatedAt": "2024-01-26T00:00:00.000Z"
+    },
+    {
+      "id": "task2",
+      "title": "Design Dashboard",
+      "description": "Create wireframes for the main dashboard",
+      "status": "todo",
+      "priority": "medium",
+      "createdAt": "2024-01-26T00:00:00.000Z",
+      "updatedAt": "2024-01-26T00:00:00.000Z"
+    },
+    {
+      "id": "task3",
+      "title": "Setup Database",
+      "description": "Configure and setup the database schema",
+      "status": "inprogress",
+      "priority": "high",
+      "createdAt": "2024-01-26T00:00:00.000Z",
+      "updatedAt": "2024-01-26T00:00:00.000Z"
+    },
+    {
+      "id": "task4",
+      "title": "Project Setup",
+      "description": "Initialize project and install dependencies",
+      "status": "done",
+      "priority": "low",
+      "createdAt": "2024-01-26T00:00:00.000Z",
+      "updatedAt": "2024-01-26T00:00:00.000Z"
+    }
+  ]
+}
