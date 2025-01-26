@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import {
   DndContext,
   DragEndEvent,
+  DragOverEvent,
+  DragStartEvent,
   useSensor,
   useSensors,
   PointerSensor,
@@ -10,7 +12,6 @@ import {
 import {
   SortableContext,
   verticalListSortingStrategy,
-  arrayMove,
 } from "@dnd-kit/sortable";
 import { Board as BoardType, Task, TaskStatus } from "../types/interfaces";
 import TaskCard from "./TaskCard";
@@ -28,6 +29,7 @@ const Board: React.FC<BoardProps> = ({
   onAddTask,
   onAddList,
 }) => {
+  const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [newCardTitle, setNewCardTitle] = useState<{ [key: string]: string }>(
     {}
   );
@@ -45,17 +47,57 @@ const Board: React.FC<BoardProps> = ({
     })
   );
 
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    const task = board.tasks[active.id as string];
+    setActiveTask(task);
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+    if (!over) return;
+
+    const activeId = active.id;
+    const overId = over.id;
+
+    if (activeId === overId) return;
+
+    const activeData = active.data.current;
+    const overData = over.data.current;
+
+    if (!activeData || !overData) return;
+
+    if (activeData.type === "Task" && overData.type === "Task") {
+      // Handle task reordering within the same column or between columns
+      const activeColumnId = activeData.columnId;
+      const overColumnId = overData.columnId;
+
+      if (activeColumnId !== overColumnId) {
+        onTaskMove(activeId as string, activeColumnId, overColumnId);
+      }
+    }
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over) return;
 
-    const taskId = active.id as string;
-    const sourceColumn = active.data.current?.sortable.containerId;
-    const destinationColumn = over.data.current?.sortable.containerId;
+    const activeData = active.data.current;
+    const overData = over.data.current;
 
-    if (sourceColumn !== destinationColumn) {
-      onTaskMove(taskId, sourceColumn, destinationColumn);
+    if (!activeData || !overData) return;
+
+    if (activeData.type === "Task" && overData.columnId) {
+      const taskId = active.id as string;
+      const sourceColumn = activeData.columnId;
+      const destinationColumn = overData.columnId;
+
+      if (sourceColumn !== destinationColumn) {
+        onTaskMove(taskId, sourceColumn, destinationColumn);
+      }
     }
+
+    setActiveTask(null);
   };
 
   const handleAddCard = (columnId: TaskStatus) => {
@@ -81,6 +123,8 @@ const Board: React.FC<BoardProps> = ({
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
         <div className="flex gap-4 h-full overflow-x-auto overflow-y-hidden px-2 pb-2">

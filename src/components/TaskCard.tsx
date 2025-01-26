@@ -1,18 +1,12 @@
 import React from "react";
+import { Task } from "../types/interfaces";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Task, TaskPriority } from "../types/interfaces";
 
 interface TaskCardProps {
   task: Task;
   columnId: string;
 }
-
-const priorityColors = {
-  low: "bg-green-100 text-green-800",
-  medium: "bg-yellow-100 text-yellow-800",
-  high: "bg-red-100 text-red-800",
-} as const;
 
 const TaskCard: React.FC<TaskCardProps> = ({ task, columnId }) => {
   const {
@@ -27,15 +21,20 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, columnId }) => {
     data: {
       type: "Task",
       task,
-      sortable: {
-        containerId: columnId,
-      },
+      columnId,
     },
   });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const priorityColors = {
+    low: "bg-blue-500/20",
+    medium: "bg-yellow-500/20",
+    high: "bg-red-500/20",
   };
 
   return (
@@ -44,26 +43,28 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, columnId }) => {
       style={style}
       {...attributes}
       {...listeners}
-      className={`bg-white rounded shadow-sm hover:bg-gray-50 cursor-pointer ${
-        isDragging ? "opacity-50" : ""
-      }`}
+      className={`p-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg cursor-grab active:cursor-grabbing group transition-colors`}
     >
-      <div className="p-2 space-y-2">
-        <h4 className="text-sm font-medium text-gray-900">{task.title}</h4>
+      <div className="flex flex-col gap-2">
+        <h4 className="text-sm font-medium text-white group-hover:text-white/90">
+          {task.title}
+        </h4>
         {task.description && (
-          <p className="text-xs text-gray-600">{task.description}</p>
+          <p className="text-xs text-white/60 group-hover:text-white/70">
+            {task.description}
+          </p>
         )}
         <div className="flex items-center gap-2">
           <span
-            className={`px-2 py-1 rounded text-xs font-medium ${
+            className={`px-2 py-0.5 rounded text-xs font-medium ${
               priorityColors[task.priority]
-            }`}
+            } text-white/80`}
           >
             {task.priority}
           </span>
           {task.dueDate && (
-            <span className="text-xs text-gray-500">
-              Due {new Date(task.dueDate).toLocaleDateString()}
+            <span className="text-xs text-white/60">
+              {new Date(task.dueDate).toLocaleDateString()}
             </span>
           )}
         </div>
