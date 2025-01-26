@@ -158,14 +158,12 @@ function App() {
   };
 
   if (!token) {
-    return (
+    return view === "register" ? (
+      <Register onRegister={setToken} />
+    ) : (
       <div className="min-h-screen bg-[#f9fafc] flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          {view === "register" ? (
-            <Register onRegister={setToken} />
-          ) : (
-            <Login onLogin={setToken} />
-          )}
+          <Login onLogin={setToken} />
         </div>
       </div>
     );
