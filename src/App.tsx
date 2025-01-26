@@ -167,21 +167,37 @@ function App() {
 
   if (!board) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#0079bf]"></div>
+      <div className="w-screen h-screen bg-gradient-to-br from-pink-400 via-purple-400 to-indigo-500 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-semibold text-gray-900">My Tasks</h1>
-          <div className="flex gap-4">
+    <div className="w-screen h-screen bg-gradient-to-br from-pink-400 via-purple-400 to-indigo-500 overflow-hidden">
+      <header className="bg-white/10 backdrop-blur-lg border-b border-white/10">
+        <div className="max-w-7xl mx-auto h-14 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <h1 className="text-xl font-semibold text-white">My Tasks</h1>
+            <button className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 text-white/60"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+          </div>
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setIsNewTaskFormOpen(true)}
-              className="bg-[#0079bf] hover:bg-[#026aa7] text-white px-4 py-2 rounded flex items-center gap-2 text-sm font-medium transition-colors"
+              className="bg-white/10 hover:bg-white/20 text-white px-4 py-1.5 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -199,15 +215,26 @@ function App() {
             </button>
             <button
               onClick={handleLogout}
-              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm font-medium transition-colors"
+              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
             >
-              Logout
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 text-white/60"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
             </button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 h-[calc(100vh-4rem)] overflow-hidden">
+      <main className="h-[calc(100vh-3.5rem)] overflow-hidden">
         <Board board={board} onTaskMove={handleTaskMove} />
       </main>
 
@@ -219,7 +246,7 @@ function App() {
 
       {error && (
         <div
-          className="fixed bottom-4 right-4 bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg"
+          className="fixed bottom-4 right-4 bg-white/10 backdrop-blur-lg border border-white/10 text-white px-4 py-3 rounded-xl shadow-lg"
           role="alert"
         >
           <span className="block sm:inline">{error}</span>
@@ -228,7 +255,7 @@ function App() {
             className="absolute top-0 bottom-0 right-0 px-4 py-3"
           >
             <svg
-              className="fill-current h-6 w-6 text-red-500"
+              className="fill-current h-6 w-6 text-white/60"
               role="button"
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 20 20"
