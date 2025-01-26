@@ -6,16 +6,15 @@ const path = require("path");
 const app = express();
 const server = jsonServer.create();
 const router = jsonServer.router(path.join(__dirname, "db.json"));
-const middlewares = jsonServer.defaults();
+const middlewares = jsonServer.defaults({
+  static: path.join(__dirname, "../dist"),
+});
 
 const PORT = process.env.PORT || 3000;
 
 // Set up CORS
 const corsOptions = {
-  origin:
-    process.env.NODE_ENV === "production"
-      ? "https://typescript-todo-app-04dbde53bff8.herokuapp.com"
-      : "http://localhost:5173",
+  origin: true, // Allow all origins in development and production
   credentials: true,
 };
 
@@ -31,16 +30,17 @@ app.get("/health", (req, res) => {
 // API routes
 app.use("/api", router);
 
-// Serve static files in production
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "../dist")));
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, "../dist")));
 
-  // Handle React routing in production
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "../dist/index.html"));
-  });
-}
+// Handle React routing, return all requests to React app
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../dist/index.html"));
+});
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+  console.log(
+    `Frontend files being served from: ${path.join(__dirname, "../dist")}`
+  );
 });
