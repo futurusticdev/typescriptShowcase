@@ -15,20 +15,42 @@ const initialDb = {
   tasks: [],
 };
 
-if (!fs.existsSync(dbPath)) {
-  fs.writeFileSync(dbPath, JSON.stringify(initialDb, null, 2));
-}
-
 // Read and parse the database file
 const getDb = () => {
-  const data = fs.readFileSync(dbPath, "utf8");
-  return JSON.parse(data);
+  try {
+    if (!fs.existsSync(dbPath)) {
+      // If file doesn't exist, create it with initial structure
+      fs.writeFileSync(dbPath, JSON.stringify(initialDb, null, 2), "utf8");
+      return initialDb;
+    }
+    const data = fs.readFileSync(dbPath, "utf8");
+    const db = JSON.parse(data);
+    // Ensure the database has the required structure
+    if (!db.users) db.users = [];
+    if (!db.tasks) db.tasks = [];
+    return db;
+  } catch (error) {
+    console.error("Error reading database:", error);
+    // If there's any error, return a fresh database
+    return { ...initialDb };
+  }
 };
 
 // Write to the database file
 const saveDb = (db) => {
-  fs.writeFileSync(dbPath, JSON.stringify(db, null, 2));
+  try {
+    fs.writeFileSync(dbPath, JSON.stringify(db, null, 2), "utf8");
+  } catch (error) {
+    console.error("Error writing to database:", error);
+    throw new Error("Failed to save to database");
+  }
 };
+
+// Initialize database on startup
+console.log("Initializing database...");
+const db = getDb();
+saveDb(db);
+console.log("Database initialized successfully");
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
