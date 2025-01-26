@@ -9,12 +9,11 @@ import {
   PointerSensor,
   rectIntersection,
   DragOverlay,
-  defaultDropAnimationSideEffects,
-  Modifier,
 } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
+  arrayMove,
 } from "@dnd-kit/sortable";
 import { useDroppable } from "@dnd-kit/core";
 import { Board as BoardType, Task, TaskStatus } from "../types/interfaces";
@@ -38,11 +37,11 @@ const Board: React.FC<BoardProps> = ({
   const [newCardTitle, setNewCardTitle] = useState<{ [key: string]: string }>(
     {}
   );
-  const [newListTitle, setNewListTitle] = useState("");
   const [showNewCardInput, setShowNewCardInput] = useState<{
     [key: string]: boolean;
   }>({});
   const [showNewListInput, setShowNewListInput] = useState(false);
+  const [newListTitle, setNewListTitle] = useState("");
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -74,10 +73,10 @@ const Board: React.FC<BoardProps> = ({
       const activeData = active.data.current;
       const overData = over.data.current;
 
-      if (!activeData || !overData) return;
+      if (!activeData) return;
 
       // Handle dropping on a column
-      if (overData.type === "Column") {
+      if (overData?.type === "Column") {
         const sourceColumnId = activeData.columnId;
         const destinationColumnId = overId;
 
@@ -88,7 +87,7 @@ const Board: React.FC<BoardProps> = ({
       }
 
       // Handle dropping on another task
-      if (activeData.type === "Task" && overData.type === "Task") {
+      if (overData?.type === "Task") {
         const sourceColumnId = activeData.columnId;
         const destinationColumnId = overData.columnId;
 
@@ -103,39 +102,38 @@ const Board: React.FC<BoardProps> = ({
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       const { active, over } = event;
+
+      setActiveTask(null);
+      setActiveColumn(null);
+
       if (!over) return;
 
       const activeId = active.id as string;
       const overId = over.id as string;
 
-      if (activeId === overId) {
-        setActiveTask(null);
-        setActiveColumn(null);
-        return;
-      }
+      if (activeId === overId) return;
 
       const activeData = active.data.current;
       const overData = over.data.current;
 
-      if (!activeData || !overData) {
-        setActiveTask(null);
-        setActiveColumn(null);
-        return;
-      }
+      if (!activeData) return;
 
-      // Final position update
-      if (activeData.type === "Task") {
+      // Handle final position update
+      if (overData?.type === "Column") {
         const sourceColumnId = activeData.columnId;
-        const destinationColumnId =
-          overData.type === "Column" ? overId : overData.columnId;
+        const destinationColumnId = overId;
+
+        if (sourceColumnId !== destinationColumnId) {
+          onTaskMove(activeId, sourceColumnId, destinationColumnId);
+        }
+      } else if (overData?.type === "Task") {
+        const sourceColumnId = activeData.columnId;
+        const destinationColumnId = overData.columnId;
 
         if (sourceColumnId !== destinationColumnId) {
           onTaskMove(activeId, sourceColumnId, destinationColumnId);
         }
       }
-
-      setActiveTask(null);
-      setActiveColumn(null);
     },
     [onTaskMove]
   );
@@ -170,15 +168,6 @@ const Board: React.FC<BoardProps> = ({
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
-        modifiers={[
-          ((args) => ({
-            ...args,
-            x: args.transform.x,
-            y: args.transform.y,
-            scaleX: 1,
-            scaleY: 1,
-          })) as Modifier,
-        ]}
       >
         <div className="flex-1 flex gap-4 overflow-x-auto overflow-y-hidden p-2">
           {board.columns.map((column) => {
@@ -186,7 +175,7 @@ const Board: React.FC<BoardProps> = ({
               id: column.id,
               data: {
                 type: "Column",
-                column,
+                columnId: column.id,
               },
             });
 
@@ -211,13 +200,13 @@ const Board: React.FC<BoardProps> = ({
                     </svg>
                   </button>
                 </div>
-                <div className="flex-1 overflow-y-auto px-2 pb-2 touch-none">
+                <div className="flex-1 overflow-y-auto px-2 pb-2">
                   <SortableContext
                     items={column.taskIds}
                     strategy={verticalListSortingStrategy}
                     key={`${column.id}-${column.taskIds.length}`}
                   >
-                    <div className="space-y-2">
+                    <div className="space-y-2 min-h-[1px]">
                       {column.taskIds.map((taskId) => {
                         const task = board.tasks[taskId];
                         return task ? (
