@@ -3,36 +3,47 @@ import { Task } from "../types";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
-export const api = {
-  // Fetch all tasks
-  getTasks: async (): Promise<Task[]> => {
-    const response = await axios.get(`${API_URL}/api/tasks`);
-    return response.data;
-  },
+const api = axios.create({
+  baseURL: API_URL,
+});
 
-  // Create a new task
-  createTask: async (
-    task: Omit<Task, "id" | "createdAt" | "updatedAt">
-  ): Promise<Task> => {
-    const response = await axios.post(`${API_URL}/api/tasks`, {
-      ...task,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
-    return response.data;
-  },
+// Add token to requests if available
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
-  // Update a task
-  updateTask: async (taskId: string, task: Partial<Task>): Promise<Task> => {
-    const response = await axios.put(`${API_URL}/api/tasks/${taskId}`, {
-      ...task,
-      updatedAt: new Date().toISOString(),
-    });
-    return response.data;
-  },
+export const getTasks = async (): Promise<Task[]> => {
+  const response = await api.get("/api/tasks");
+  return response.data;
+};
 
-  // Delete a task
-  deleteTask: async (taskId: string): Promise<void> => {
-    await axios.delete(`${API_URL}/api/tasks/${taskId}`);
-  },
+export const createTask = async (
+  task: Omit<Task, "id" | "createdAt" | "updatedAt">
+): Promise<Task> => {
+  const response = await api.post("/api/tasks", {
+    ...task,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  });
+  return response.data;
+};
+
+export const updateTask = async (
+  taskId: string,
+  task: Partial<Task>
+): Promise<Task> => {
+  const response = await api.put(`/api/tasks/${taskId}`, {
+    ...task,
+    updatedAt: new Date().toISOString(),
+  });
+  return response.data;
+};
+
+export const deleteTask = async (taskId: string): Promise<void> => {
+  const response = await api.delete(`/api/tasks/${taskId}`);
+  return response.data;
 };

@@ -7,12 +7,18 @@ import {
   Fab,
   Snackbar,
   Alert,
+  Box,
+  Button,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import Board from "./components/Board";
 import NewTaskForm from "./components/NewTaskForm.tsx";
 import { Board as BoardType, Task } from "./types";
 import { api } from "./services/api";
+import Login from "./components/Login";
+import Register from "./components/Register";
+import { DndContext, DragEndEvent, DragStartEvent } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
 
 const theme = createTheme();
 
@@ -42,18 +48,48 @@ function App() {
   const [board, setBoard] = useState<BoardType | null>(null);
   const [isNewTaskFormOpen, setIsNewTaskFormOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(
+    localStorage.getItem("token")
+  );
+  const [view, setView] = useState<"login" | "register">("login");
 
   useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const tasks = await api.getTasks();
-        setBoard(createInitialBoard(tasks));
-      } catch (err) {
-        setError("Failed to load tasks. Please try again later.");
+    if (token) {
+      localStorage.setItem("token", token);
+      fetchTasks();
+    } else {
+      localStorage.removeItem("token");
+      setBoard(null);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1);
+      if (hash === "register") {
+        setView("register");
+      } else {
+        setView("login");
       }
     };
-    fetchTasks();
+
+    window.addEventListener("hashchange", handleHashChange);
+    handleHashChange();
+
+    return () => window.removeEventListener("hashchange", handleHashChange);
   }, []);
+
+  const fetchTasks = async () => {
+    try {
+      const tasks = await api.getTasks();
+      setBoard(createInitialBoard(tasks));
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+      if ((error as any)?.response?.status === 401) {
+        setToken(null);
+      }
+    }
+  };
 
   const handleTaskMove = async (
     taskId: string,
@@ -129,6 +165,18 @@ function App() {
     }
   };
 
+  const handleLogout = () => {
+    setToken(null);
+  };
+
+  if (!token) {
+    return view === "register" ? (
+      <Register onRegister={setToken} />
+    ) : (
+      <Login onLogin={setToken} />
+    );
+  }
+
   if (!board) {
     return null; // Or a loading spinner
   }
@@ -137,14 +185,20 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Container maxWidth={false} disableGutters>
-        <Board board={board} onTaskMove={handleTaskMove} />
-        <Fab
-          color="primary"
-          sx={{ position: "fixed", bottom: 16, right: 16 }}
-          onClick={() => setIsNewTaskFormOpen(true)}
-        >
-          <AddIcon />
-        </Fab>
+        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+          <Button
+            variant="contained"
+            onClick={() => setIsNewTaskFormOpen(true)}
+          >
+            Add Task
+          </Button>
+          <Button variant="outlined" onClick={handleLogout}>
+            Logout
+          </Button>
+        </Box>
+        <DndContext onDragStart={() => {}} onDragEnd={() => {}}>
+          <Board board={board} onTaskMove={handleTaskMove} />
+        </DndContext>
         <NewTaskForm
           open={isNewTaskFormOpen}
           onClose={() => setIsNewTaskFormOpen(false)}
