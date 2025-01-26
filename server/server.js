@@ -6,21 +6,18 @@ const path = require("path");
 const app = express();
 const server = jsonServer.create();
 const router = jsonServer.router(path.join(__dirname, "db.json"));
-const middlewares = jsonServer.defaults({
-  static: path.join(__dirname, "../dist"),
-});
 
 const PORT = process.env.PORT || 3000;
+const isDevelopment = process.env.NODE_ENV !== "production";
 
 // Set up CORS
 const corsOptions = {
-  origin: true, // Allow all origins in development and production
+  origin: isDevelopment ? "http://localhost:5173" : true,
   credentials: true,
 };
 
 app.use(cors(corsOptions));
 app.use(express.json());
-app.use(middlewares);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
@@ -30,17 +27,25 @@ app.get("/health", (req, res) => {
 // API routes
 app.use("/api", router);
 
-// Serve static files from the React app
-app.use(express.static(path.join(__dirname, "../dist")));
+// In production, serve static files and handle React routing
+if (!isDevelopment) {
+  const distPath = path.join(__dirname, "../dist");
+  console.log("Serving production build from:", distPath);
 
-// Handle React routing, return all requests to React app
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../dist/index.html"));
-});
+  app.use(express.static(distPath));
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(distPath, "index.html"));
+  });
+} else {
+  console.log("Running in development mode - frontend served by Vite");
+}
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-  console.log(
-    `Frontend files being served from: ${path.join(__dirname, "../dist")}`
-  );
+  if (isDevelopment) {
+    console.log(`API available at http://localhost:${PORT}/api`);
+    console.log(
+      "Frontend dev server should be running on http://localhost:5173"
+    );
+  }
 });
