@@ -1,17 +1,12 @@
-import { create, router as _router } from "json-server";
-import cors from "cors";
-import express from "express";
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const jsonServer = require("json-server");
+const cors = require("cors");
+const express = require("express");
+const path = require("path");
 
 const app = express();
-const jsonServer = create();
-
-// Set up the JSON Server router with the correct path to db.json
-const router = _router(path.join(__dirname, "db.json"));
+const server = jsonServer.create();
+const router = jsonServer.router(path.join(__dirname, "db.json"));
+const middlewares = jsonServer.defaults();
 
 const PORT = process.env.PORT || 3000;
 
@@ -26,16 +21,14 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
-
-// Use json-server defaults
-app.use(jsonServer.defaults());
+app.use(middlewares);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
   res.json({ status: "UP" });
 });
 
-// API routes with json-server
+// API routes
 app.use("/api", router);
 
 // Serve static files in production
