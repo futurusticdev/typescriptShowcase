@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from "react";
 import Board from "./components/Board";
 import NewTaskForm from "./components/NewTaskForm";
-import { Board as BoardType, Task, TaskStatus } from "./types/interfaces";
+import {
+  Board as BoardType,
+  Task,
+  TaskStatus,
+  TaskPriority,
+} from "./types/interfaces";
 import { getTasks, createTask, updateTask } from "./services/api";
 import Login from "./components/Login";
 import Register from "./components/Register";
@@ -153,6 +158,34 @@ function App() {
     }
   };
 
+  const handleQuickAddTask = async (columnId: TaskStatus, title: string) => {
+    const taskData = {
+      title,
+      description: "",
+      status: columnId,
+      priority: "medium" as TaskPriority,
+      dueDate: null,
+      userId: localStorage.getItem("userId") || "",
+    };
+    await handleCreateTask(taskData);
+  };
+
+  const handleAddList = (title: string) => {
+    setBoard((prev) => {
+      if (!prev) return prev;
+      const newBoard = { ...prev };
+      const newColumnId = `column-${Date.now()}` as TaskStatus;
+
+      newBoard.columns.push({
+        id: newColumnId,
+        title,
+        taskIds: [],
+      });
+
+      return newBoard;
+    });
+  };
+
   const handleLogout = () => {
     setToken(null);
   };
@@ -235,7 +268,12 @@ function App() {
       </header>
 
       <main className="h-[calc(100vh-3.5rem)] overflow-hidden">
-        <Board board={board} onTaskMove={handleTaskMove} />
+        <Board
+          board={board}
+          onTaskMove={handleTaskMove}
+          onAddTask={handleQuickAddTask}
+          onAddList={handleAddList}
+        />
       </main>
 
       <NewTaskForm

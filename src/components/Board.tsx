@@ -1,24 +1,42 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   DndContext,
   DragEndEvent,
   useSensor,
   useSensors,
   PointerSensor,
+  closestCorners,
 } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
+  arrayMove,
 } from "@dnd-kit/sortable";
-import { Board as BoardType, Task } from "../types/interfaces";
+import { Board as BoardType, Task, TaskStatus } from "../types/interfaces";
 import TaskCard from "./TaskCard";
 
 interface BoardProps {
   board: BoardType;
   onTaskMove: (taskId: string, source: string, destination: string) => void;
+  onAddTask: (columnId: TaskStatus, title: string) => void;
+  onAddList: (title: string) => void;
 }
 
-const Board: React.FC<BoardProps> = ({ board, onTaskMove }) => {
+const Board: React.FC<BoardProps> = ({
+  board,
+  onTaskMove,
+  onAddTask,
+  onAddList,
+}) => {
+  const [newCardTitle, setNewCardTitle] = useState<{ [key: string]: string }>(
+    {}
+  );
+  const [newListTitle, setNewListTitle] = useState("");
+  const [showNewCardInput, setShowNewCardInput] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [showNewListInput, setShowNewListInput] = useState(false);
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -40,9 +58,31 @@ const Board: React.FC<BoardProps> = ({ board, onTaskMove }) => {
     }
   };
 
+  const handleAddCard = (columnId: TaskStatus) => {
+    const title = newCardTitle[columnId]?.trim();
+    if (title) {
+      onAddTask(columnId, title);
+      setNewCardTitle({ ...newCardTitle, [columnId]: "" });
+    }
+    setShowNewCardInput({ ...showNewCardInput, [columnId]: false });
+  };
+
+  const handleAddList = () => {
+    const title = newListTitle.trim();
+    if (title) {
+      onAddList(title);
+      setNewListTitle("");
+    }
+    setShowNewListInput(false);
+  };
+
   return (
     <div className="h-full w-full">
-      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragEnd={handleDragEnd}
+      >
         <div className="flex gap-4 h-full overflow-x-auto overflow-y-hidden px-2 pb-2">
           {board.columns.map((column) => (
             <div
@@ -81,41 +121,124 @@ const Board: React.FC<BoardProps> = ({ board, onTaskMove }) => {
                       );
                     })}
                   </div>
-                  <button className="mt-2 w-full py-2 px-3 flex items-center gap-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors text-sm">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                        clipRule="evenodd"
+                  {showNewCardInput[column.id] ? (
+                    <div className="mt-2 p-2 bg-white/5 rounded-lg">
+                      <input
+                        type="text"
+                        value={newCardTitle[column.id] || ""}
+                        onChange={(e) =>
+                          setNewCardTitle({
+                            ...newCardTitle,
+                            [column.id]: e.target.value,
+                          })
+                        }
+                        placeholder="Enter card title..."
+                        className="w-full p-2 bg-white/10 rounded-lg text-white text-sm mb-2"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            handleAddCard(column.id);
+                          }
+                        }}
                       />
-                    </svg>
-                    Add a card
-                  </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleAddCard(column.id)}
+                          className="px-3 py-1 bg-white/20 hover:bg-white/30 text-white rounded-lg text-sm"
+                        >
+                          Add
+                        </button>
+                        <button
+                          onClick={() =>
+                            setShowNewCardInput({
+                              ...showNewCardInput,
+                              [column.id]: false,
+                            })
+                          }
+                          className="px-3 py-1 hover:bg-white/10 text-white/60 rounded-lg text-sm"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() =>
+                        setShowNewCardInput({
+                          ...showNewCardInput,
+                          [column.id]: true,
+                        })
+                      }
+                      className="mt-2 w-full py-2 px-3 flex items-center gap-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors text-sm"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      Add a card
+                    </button>
+                  )}
                 </div>
               </SortableContext>
             </div>
           ))}
           <div className="flex-shrink-0 w-72">
-            <button className="w-full h-10 bg-white/10 hover:bg-white/20 backdrop-blur-lg rounded-xl text-white/80 hover:text-white flex items-center justify-center gap-2 transition-colors text-sm">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                  clipRule="evenodd"
+            {showNewListInput ? (
+              <div className="p-2 bg-white/10 backdrop-blur-lg rounded-xl">
+                <input
+                  type="text"
+                  value={newListTitle}
+                  onChange={(e) => setNewListTitle(e.target.value)}
+                  placeholder="Enter list title..."
+                  className="w-full p-2 bg-white/10 rounded-lg text-white text-sm mb-2"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleAddList();
+                    }
+                  }}
                 />
-              </svg>
-              Add another list
-            </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleAddList}
+                    className="px-3 py-1 bg-white/20 hover:bg-white/30 text-white rounded-lg text-sm"
+                  >
+                    Add
+                  </button>
+                  <button
+                    onClick={() => setShowNewListInput(false)}
+                    className="px-3 py-1 hover:bg-white/10 text-white/60 rounded-lg text-sm"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowNewListInput(true)}
+                className="w-full h-10 bg-white/10 hover:bg-white/20 backdrop-blur-lg rounded-xl text-white/80 hover:text-white flex items-center justify-center gap-2 transition-colors text-sm"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Add another list
+              </button>
+            )}
           </div>
         </div>
       </DndContext>
