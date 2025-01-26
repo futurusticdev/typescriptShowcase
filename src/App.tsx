@@ -161,24 +161,20 @@ function App() {
     return view === "register" ? (
       <Register onRegister={setToken} />
     ) : (
-      <div className="min-h-screen bg-[#f9fafc] flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <Login onLogin={setToken} />
-        </div>
-      </div>
+      <Login onLogin={setToken} />
     );
   }
 
   if (!board) {
     return (
-      <div className="min-h-screen bg-[#f9fafc] flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#0079bf]"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#f9fafc]">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <h1 className="text-xl font-semibold text-gray-900">My Tasks</h1>
@@ -211,7 +207,7 @@ function App() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 h-[calc(100vh-4rem)] overflow-hidden">
         <Board board={board} onTaskMove={handleTaskMove} />
       </main>
 

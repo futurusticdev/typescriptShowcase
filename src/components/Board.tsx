@@ -41,13 +41,13 @@ const Board: React.FC<BoardProps> = ({ board, onTaskMove }) => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-theme(space.32))] p-6">
+    <div className="h-full">
       <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-        <div className="flex gap-4 overflow-x-auto pb-4">
+        <div className="flex gap-4 h-full overflow-x-auto pb-4">
           {board.columns.map((column) => (
             <div
               key={column.id}
-              className="flex-shrink-0 w-72 bg-[#ebecf0] rounded-lg"
+              className="flex-shrink-0 w-72 bg-[#ebecf0] rounded-lg flex flex-col"
             >
               <div className="px-3 py-2.5">
                 <h3 className="font-medium text-[#172b4d] text-sm">
@@ -58,17 +58,19 @@ const Board: React.FC<BoardProps> = ({ board, onTaskMove }) => {
                 items={column.taskIds}
                 strategy={verticalListSortingStrategy}
               >
-                <div className="px-2 pb-2 space-y-2 min-h-[1px]">
-                  {column.taskIds.map((taskId) => {
-                    const task = board.tasks[taskId];
-                    return (
-                      <TaskCard
-                        key={task.id}
-                        task={task}
-                        columnId={column.id}
-                      />
-                    );
-                  })}
+                <div className="px-2 pb-2 flex-1 overflow-y-auto">
+                  <div className="space-y-2">
+                    {column.taskIds.map((taskId) => {
+                      const task = board.tasks[taskId];
+                      return (
+                        <TaskCard
+                          key={task.id}
+                          task={task}
+                          columnId={column.id}
+                        />
+                      );
+                    })}
+                  </div>
                 </div>
               </SortableContext>
             </div>
