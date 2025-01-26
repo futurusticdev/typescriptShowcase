@@ -7,13 +7,16 @@ import {
   useSensor,
   useSensors,
   PointerSensor,
-  closestCorners,
+  rectIntersection,
   DragOverlay,
+  defaultDropAnimationSideEffects,
+  Modifier,
 } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+import { useDroppable } from "@dnd-kit/core";
 import { Board as BoardType, Task, TaskStatus } from "../types/interfaces";
 import TaskCard from "./TaskCard";
 
@@ -46,7 +49,7 @@ const Board: React.FC<BoardProps> = ({
       activationConstraint: {
         distance: 5,
         delay: 0,
-        tolerance: 0,
+        tolerance: 5,
       },
     })
   );
@@ -63,8 +66,8 @@ const Board: React.FC<BoardProps> = ({
       const { active, over } = event;
       if (!over) return;
 
-      const activeId = active.id;
-      const overId = over.id;
+      const activeId = active.id as string;
+      const overId = over.id as string;
 
       if (activeId === overId) return;
 
@@ -73,12 +76,24 @@ const Board: React.FC<BoardProps> = ({
 
       if (!activeData || !overData) return;
 
-      if (activeData.type === "Task" && overData.columnId) {
-        const activeColumnId = activeData.columnId;
-        const overColumnId = overData.columnId;
+      // Handle dropping on a column
+      if (overData.type === "Column") {
+        const sourceColumnId = activeData.columnId;
+        const destinationColumnId = overId;
 
-        if (activeColumnId !== overColumnId) {
-          onTaskMove(activeId as string, activeColumnId, overColumnId);
+        if (sourceColumnId !== destinationColumnId) {
+          onTaskMove(activeId, sourceColumnId, destinationColumnId);
+        }
+        return;
+      }
+
+      // Handle dropping on another task
+      if (activeData.type === "Task" && overData.type === "Task") {
+        const sourceColumnId = activeData.columnId;
+        const destinationColumnId = overData.columnId;
+
+        if (sourceColumnId !== destinationColumnId) {
+          onTaskMove(activeId, sourceColumnId, destinationColumnId);
         }
       }
     },
@@ -90,18 +105,32 @@ const Board: React.FC<BoardProps> = ({
       const { active, over } = event;
       if (!over) return;
 
+      const activeId = active.id as string;
+      const overId = over.id as string;
+
+      if (activeId === overId) {
+        setActiveTask(null);
+        setActiveColumn(null);
+        return;
+      }
+
       const activeData = active.data.current;
       const overData = over.data.current;
 
-      if (!activeData || !overData) return;
+      if (!activeData || !overData) {
+        setActiveTask(null);
+        setActiveColumn(null);
+        return;
+      }
 
-      if (activeData.type === "Task" && overData.columnId) {
-        const taskId = active.id as string;
-        const sourceColumn = activeData.columnId;
-        const destinationColumn = overData.columnId;
+      // Final position update
+      if (activeData.type === "Task") {
+        const sourceColumnId = activeData.columnId;
+        const destinationColumnId =
+          overData.type === "Column" ? overId : overData.columnId;
 
-        if (sourceColumn !== destinationColumn) {
-          onTaskMove(taskId, sourceColumn, destinationColumn);
+        if (sourceColumnId !== destinationColumnId) {
+          onTaskMove(activeId, sourceColumnId, destinationColumnId);
         }
       }
 
@@ -137,120 +166,140 @@ const Board: React.FC<BoardProps> = ({
     <div className="h-full w-full flex flex-col">
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCorners}
+        collisionDetection={rectIntersection}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
+        modifiers={[
+          ((args) => ({
+            ...args,
+            x: args.transform.x,
+            y: args.transform.y,
+            scaleX: 1,
+            scaleY: 1,
+          })) as Modifier,
+        ]}
       >
         <div className="flex-1 flex gap-4 overflow-x-auto overflow-y-hidden p-2">
-          {board.columns.map((column) => (
-            <div
-              key={column.id}
-              className="flex flex-col flex-shrink-0 w-72 bg-white/10 backdrop-blur-lg rounded-xl shadow-lg max-h-full"
-            >
-              <div className="flex-shrink-0 px-3 py-2.5 flex items-center justify-between">
-                <h3 className="font-medium text-white text-sm">
-                  {column.title}
-                </h3>
-                <button className="p-1 hover:bg-white/10 rounded-md transition-colors">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 text-white/60"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
-                  </svg>
-                </button>
-              </div>
-              <div className="flex-1 overflow-y-auto px-2 pb-2 touch-none">
-                <SortableContext
-                  items={column.taskIds}
-                  strategy={verticalListSortingStrategy}
-                  key={`${column.id}-${column.taskIds.length}`}
-                >
-                  <div className="space-y-2">
-                    {column.taskIds.map((taskId) => {
-                      const task = board.tasks[taskId];
-                      return task ? (
-                        <TaskCard
-                          key={task.id}
-                          task={task}
-                          columnId={column.id}
-                          isDragging={activeTask?.id === task.id}
-                        />
-                      ) : null;
-                    })}
-                  </div>
-                </SortableContext>
-                {showNewCardInput[column.id] ? (
-                  <div className="mt-2 p-2 bg-white/5 rounded-lg">
-                    <input
-                      type="text"
-                      value={newCardTitle[column.id] || ""}
-                      onChange={(e) =>
-                        setNewCardTitle({
-                          ...newCardTitle,
-                          [column.id]: e.target.value,
-                        })
-                      }
-                      placeholder="Enter card title..."
-                      className="w-full p-2 bg-white/10 rounded-lg text-white text-sm mb-2"
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          handleAddCard(column.id);
-                        }
-                      }}
-                      autoFocus
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleAddCard(column.id)}
-                        className="px-3 py-1 bg-white/20 hover:bg-white/30 text-white rounded-lg text-sm"
-                      >
-                        Add
-                      </button>
-                      <button
-                        onClick={() =>
-                          setShowNewCardInput({
-                            ...showNewCardInput,
-                            [column.id]: false,
-                          })
-                        }
-                        className="px-3 py-1 hover:bg-white/10 text-white/60 rounded-lg text-sm"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() =>
-                      setShowNewCardInput({
-                        ...showNewCardInput,
-                        [column.id]: true,
-                      })
-                    }
-                    className="mt-2 w-full py-2 px-3 flex items-center gap-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors text-sm"
-                  >
+          {board.columns.map((column) => {
+            const { setNodeRef } = useDroppable({
+              id: column.id,
+              data: {
+                type: "Column",
+                column,
+              },
+            });
+
+            return (
+              <div
+                key={column.id}
+                ref={setNodeRef}
+                className="flex flex-col flex-shrink-0 w-72 bg-white/10 backdrop-blur-lg rounded-xl shadow-lg max-h-full"
+              >
+                <div className="flex-shrink-0 px-3 py-2.5 flex items-center justify-between">
+                  <h3 className="font-medium text-white text-sm">
+                    {column.title}
+                  </h3>
+                  <button className="p-1 hover:bg-white/10 rounded-md transition-colors">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
+                      className="h-5 w-5 text-white/60"
                       viewBox="0 0 20 20"
                       fill="currentColor"
                     >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                        clipRule="evenodd"
-                      />
+                      <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
                     </svg>
-                    Add a card
                   </button>
-                )}
+                </div>
+                <div className="flex-1 overflow-y-auto px-2 pb-2 touch-none">
+                  <SortableContext
+                    items={column.taskIds}
+                    strategy={verticalListSortingStrategy}
+                    key={`${column.id}-${column.taskIds.length}`}
+                  >
+                    <div className="space-y-2">
+                      {column.taskIds.map((taskId) => {
+                        const task = board.tasks[taskId];
+                        return task ? (
+                          <TaskCard
+                            key={task.id}
+                            task={task}
+                            columnId={column.id}
+                            isDragging={activeTask?.id === task.id}
+                          />
+                        ) : null;
+                      })}
+                    </div>
+                  </SortableContext>
+                  {showNewCardInput[column.id] ? (
+                    <div className="mt-2 p-2 bg-white/5 rounded-lg">
+                      <input
+                        type="text"
+                        value={newCardTitle[column.id] || ""}
+                        onChange={(e) =>
+                          setNewCardTitle({
+                            ...newCardTitle,
+                            [column.id]: e.target.value,
+                          })
+                        }
+                        placeholder="Enter card title..."
+                        className="w-full p-2 bg-white/10 rounded-lg text-white text-sm mb-2"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            handleAddCard(column.id);
+                          }
+                        }}
+                        autoFocus
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleAddCard(column.id)}
+                          className="px-3 py-1 bg-white/20 hover:bg-white/30 text-white rounded-lg text-sm"
+                        >
+                          Add
+                        </button>
+                        <button
+                          onClick={() =>
+                            setShowNewCardInput({
+                              ...showNewCardInput,
+                              [column.id]: false,
+                            })
+                          }
+                          className="px-3 py-1 hover:bg-white/10 text-white/60 rounded-lg text-sm"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() =>
+                        setShowNewCardInput({
+                          ...showNewCardInput,
+                          [column.id]: true,
+                        })
+                      }
+                      className="mt-2 w-full py-2 px-3 flex items-center gap-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors text-sm"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      Add a card
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
           <div className="flex-shrink-0 w-72">
             {showNewListInput ? (
               <div className="p-2 bg-white/10 backdrop-blur-lg rounded-xl">
@@ -304,7 +353,7 @@ const Board: React.FC<BoardProps> = ({
             )}
           </div>
         </div>
-        <DragOverlay>
+        <DragOverlay dropAnimation={null}>
           {activeTask ? (
             <TaskCard
               task={activeTask}
