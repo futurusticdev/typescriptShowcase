@@ -1,5 +1,11 @@
 import React from "react";
-import { DndContext, DragEndEvent } from "@dnd-kit/core";
+import {
+  DndContext,
+  DragEndEvent,
+  useSensor,
+  useSensors,
+  PointerSensor,
+} from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
@@ -13,6 +19,14 @@ interface BoardProps {
 }
 
 const Board: React.FC<BoardProps> = ({ board, onTaskMove }) => {
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    })
+  );
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over) return;
@@ -27,17 +41,17 @@ const Board: React.FC<BoardProps> = ({ board, onTaskMove }) => {
   };
 
   return (
-    <div className="min-h-screen bg-blue-50 p-6">
-      <div className="flex gap-6 overflow-x-auto pb-4">
-        {board.columns.map((column) => (
-          <div
-            key={column.id}
-            className="flex-shrink-0 w-80 bg-gray-100 rounded-lg shadow-md"
-          >
-            <div className="p-4 bg-gray-200 rounded-t-lg">
-              <h3 className="font-semibold text-gray-700">{column.title}</h3>
-            </div>
-            <DndContext onDragEnd={handleDragEnd}>
+    <div className="min-h-[calc(100vh-theme(space.32))] bg-blue-50 p-6">
+      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        <div className="flex gap-6 overflow-x-auto pb-4">
+          {board.columns.map((column) => (
+            <div
+              key={column.id}
+              className="flex-shrink-0 w-80 bg-gray-100 rounded-lg shadow-md"
+            >
+              <div className="p-4 bg-gray-200 rounded-t-lg">
+                <h3 className="font-semibold text-gray-700">{column.title}</h3>
+              </div>
               <SortableContext
                 items={column.taskIds}
                 strategy={verticalListSortingStrategy}
@@ -55,10 +69,10 @@ const Board: React.FC<BoardProps> = ({ board, onTaskMove }) => {
                   })}
                 </div>
               </SortableContext>
-            </DndContext>
-          </div>
-        ))}
-      </div>
+            </div>
+          ))}
+        </div>
+      </DndContext>
     </div>
   );
 };

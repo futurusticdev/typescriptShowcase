@@ -42,81 +42,90 @@ const Register: React.FC<RegisterProps> = ({ onRegister }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="bg-white rounded-lg shadow-xl p-8">
+      <h2 className="text-2xl font-semibold text-gray-900 text-center mb-6">
+        Create your account
+      </h2>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {error && (
+          <div className="rounded-md bg-red-50 p-4">
+            <div className="text-sm text-red-700">{error}</div>
+          </div>
+        )}
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
-          </h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="text-sm text-red-700">{error}</div>
-            </div>
-          )}
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                className="input-field rounded-t-md"
-                placeholder="Email address"
-                value={credentials.email}
-                onChange={(e) =>
-                  setCredentials({ ...credentials, email: e.target.value })
-                }
-              />
-            </div>
-            <div>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                className="input-field"
-                placeholder="Password"
-                value={credentials.password}
-                onChange={(e) =>
-                  setCredentials({ ...credentials, password: e.target.value })
-                }
-              />
-            </div>
-            <div>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                required
-                className="input-field rounded-b-md"
-                placeholder="Confirm Password"
-                value={credentials.confirmPassword}
-                onChange={(e) =>
-                  setCredentials({
-                    ...credentials,
-                    confirmPassword: e.target.value,
-                  })
-                }
-              />
-            </div>
-          </div>
-
-          <div>
-            <button type="submit" className="btn-primary w-full">
-              Sign up
-            </button>
-          </div>
-        </form>
-        <div className="text-center">
-          <a
-            href="#login"
-            className="text-primary hover:text-primary-dark transition-colors"
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-gray-700"
           >
-            Already have an account? Sign in
-          </a>
+            Email
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            required
+            className="mt-1 input-field"
+            placeholder="Enter your email"
+            value={credentials.email}
+            onChange={(e) =>
+              setCredentials({ ...credentials, email: e.target.value })
+            }
+          />
         </div>
+        <div>
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Password
+          </label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            required
+            className="mt-1 input-field"
+            placeholder="Enter your password"
+            value={credentials.password}
+            onChange={(e) =>
+              setCredentials({ ...credentials, password: e.target.value })
+            }
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="confirmPassword"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Confirm Password
+          </label>
+          <input
+            id="confirmPassword"
+            name="confirmPassword"
+            type="password"
+            required
+            className="mt-1 input-field"
+            placeholder="Confirm your password"
+            value={credentials.confirmPassword}
+            onChange={(e) =>
+              setCredentials({
+                ...credentials,
+                confirmPassword: e.target.value,
+              })
+            }
+          />
+        </div>
+        <button type="submit" className="btn-primary w-full">
+          Sign up
+        </button>
+      </form>
+      <div className="mt-4 text-center">
+        <a
+          href="#login"
+          className="text-primary hover:text-primary-dark transition-colors"
+        >
+          Already have an account? Sign In
+        </a>
       </div>
     </div>
   );

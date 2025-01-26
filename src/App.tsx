@@ -5,7 +5,6 @@ import { Board as BoardType, Task, TaskStatus } from "./types/interfaces";
 import { getTasks, createTask, updateTask } from "./services/api";
 import Login from "./components/Login";
 import Register from "./components/Register";
-import { DndContext } from "@dnd-kit/core";
 
 const createInitialBoard = (tasks: Task[]): BoardType => {
   const columns = [
@@ -159,16 +158,22 @@ function App() {
   };
 
   if (!token) {
-    return view === "register" ? (
-      <Register onRegister={setToken} />
-    ) : (
-      <Login onLogin={setToken} />
+    return (
+      <div className="min-h-screen bg-blue-50 flex items-center justify-center">
+        <div className="w-full max-w-md">
+          {view === "register" ? (
+            <Register onRegister={setToken} />
+          ) : (
+            <Login onLogin={setToken} />
+          )}
+        </div>
+      </div>
     );
   }
 
   if (!board) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-blue-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
@@ -206,9 +211,7 @@ function App() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <DndContext>
-          <Board board={board} onTaskMove={handleTaskMove} />
-        </DndContext>
+        <Board board={board} onTaskMove={handleTaskMove} />
       </main>
 
       <NewTaskForm
