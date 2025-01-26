@@ -1,140 +1,65 @@
 import React from "react";
-import {
-  DndContext,
-  DragEndEvent,
-  DragOverEvent,
-  DragStartEvent,
-  closestCorners,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragOverlay,
-} from "@dnd-kit/core";
+import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import {
   SortableContext,
-  horizontalListSortingStrategy,
+  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Box } from "@mui/material";
-import { Board as BoardType } from "../types";
-import Column from "./Column";
+import { Board as BoardType, Task } from "../types/interfaces";
 import TaskCard from "./TaskCard";
 
 interface BoardProps {
   board: BoardType;
-  onTaskMove: (
-    taskId: string,
-    sourceColumn: string,
-    destinationColumn: string
-  ) => void;
+  onTaskMove: (taskId: string, source: string, destination: string) => void;
 }
 
 const Board: React.FC<BoardProps> = ({ board, onTaskMove }) => {
-  const [activeTask, setActiveTask] = React.useState<string | null>(null);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 5,
-      },
-    })
-  );
-
-  const handleDragStart = (event: DragStartEvent) => {
-    const { active } = event;
-    setActiveTask(active.id as string);
-  };
-
-  const handleDragOver = (event: DragOverEvent) => {
-    const { active, over } = event;
-    if (!over) return;
-
-    const activeId = active.id;
-    const overId = over.id;
-
-    if (activeId === overId) return;
-
-    const isActiveATask = active.data.current?.type === "Task";
-    if (!isActiveATask) return;
-
-    const activeColumnId = board.columns.find((col) =>
-      col.taskIds.includes(activeId as string)
-    )?.id;
-
-    const overColumnId = board.columns.find(
-      (col) => col.id === overId || col.taskIds.includes(overId as string)
-    )?.id;
-
-    if (activeColumnId && overColumnId && activeColumnId !== overColumnId) {
-      onTaskMove(activeId as string, activeColumnId, overColumnId);
-    }
-  };
-
   const handleDragEnd = (event: DragEndEvent) => {
-    setActiveTask(null);
     const { active, over } = event;
     if (!over) return;
 
-    const activeId = active.id;
-    const overId = over.id;
+    const taskId = active.id as string;
+    const sourceColumn = active.data.current?.sortable.containerId;
+    const destinationColumn = over.data.current?.sortable.containerId;
 
-    if (activeId === overId) return;
-
-    const isActiveATask = active.data.current?.type === "Task";
-    if (!isActiveATask) return;
-
-    const activeColumnId = board.columns.find((col) =>
-      col.taskIds.includes(activeId as string)
-    )?.id;
-
-    const overColumnId = board.columns.find(
-      (col) => col.id === overId || col.taskIds.includes(overId as string)
-    )?.id;
-
-    if (activeColumnId && overColumnId && activeColumnId !== overColumnId) {
-      onTaskMove(activeId as string, activeColumnId, overColumnId);
+    if (sourceColumn !== destinationColumn) {
+      onTaskMove(taskId, sourceColumn, destinationColumn);
     }
-  };
-
-  const getActiveTask = () => {
-    if (!activeTask) return null;
-    return board.tasks[activeTask];
   };
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCorners}
-      onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          gap: 2,
-          p: 2,
-          minHeight: "100vh",
-          backgroundColor: "#f5f5f5",
-          overflowX: "auto",
-        }}
-      >
-        <SortableContext
-          items={board.columns.map((col) => col.id)}
-          strategy={horizontalListSortingStrategy}
-        >
-          {board.columns.map((column) => (
-            <Column
-              key={column.id}
-              column={column}
-              tasks={column.taskIds.map((taskId) => board.tasks[taskId])}
-            />
-          ))}
-        </SortableContext>
-      </Box>
-      <DragOverlay>
-        {activeTask ? <TaskCard task={getActiveTask()!} /> : null}
-      </DragOverlay>
-    </DndContext>
+    <div className="min-h-screen bg-blue-50 p-6">
+      <div className="flex gap-6 overflow-x-auto pb-4">
+        {board.columns.map((column) => (
+          <div
+            key={column.id}
+            className="flex-shrink-0 w-80 bg-gray-100 rounded-lg shadow-md"
+          >
+            <div className="p-4 bg-gray-200 rounded-t-lg">
+              <h3 className="font-semibold text-gray-700">{column.title}</h3>
+            </div>
+            <DndContext onDragEnd={handleDragEnd}>
+              <SortableContext
+                items={column.taskIds}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="p-4 space-y-3 min-h-[200px]">
+                  {column.taskIds.map((taskId) => {
+                    const task = board.tasks[taskId];
+                    return (
+                      <TaskCard
+                        key={task.id}
+                        task={task}
+                        columnId={column.id}
+                      />
+                    );
+                  })}
+                </div>
+              </SortableContext>
+            </DndContext>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 };
 

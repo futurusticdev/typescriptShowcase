@@ -1,26 +1,11 @@
 import React, { useState, useEffect } from "react";
-import {
-  Container,
-  CssBaseline,
-  ThemeProvider,
-  createTheme,
-  Fab,
-  Snackbar,
-  Alert,
-  Box,
-  Button,
-} from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
 import Board from "./components/Board";
-import NewTaskForm from "./components/NewTaskForm.tsx";
+import NewTaskForm from "./components/NewTaskForm";
 import { Board as BoardType, Task, TaskStatus } from "./types/interfaces";
 import { getTasks, createTask, updateTask } from "./services/api";
 import Login from "./components/Login";
 import Register from "./components/Register";
-import { DndContext, DragEndEvent, DragStartEvent } from "@dnd-kit/core";
-import { arrayMove } from "@dnd-kit/sortable";
-
-const theme = createTheme();
+import { DndContext } from "@dnd-kit/core";
 
 const createInitialBoard = (tasks: Task[]): BoardType => {
   const columns = [
@@ -125,7 +110,7 @@ function App() {
         // Update task status
         newBoard.tasks[taskId] = {
           ...newBoard.tasks[taskId],
-          status: destinationColumn as Task["status"],
+          status: destinationColumn,
           updatedAt: new Date(),
         };
 
@@ -134,7 +119,7 @@ function App() {
 
       // Update the server
       await updateTask(taskId, {
-        status: destinationColumn as Task["status"],
+        status: destinationColumn,
       });
     } catch (err) {
       setError("Failed to move task. Please try again.");
@@ -182,43 +167,79 @@ function App() {
   }
 
   if (!board) {
-    return null; // Or a loading spinner
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Container maxWidth={false} disableGutters>
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-          <Button
-            variant="contained"
-            onClick={() => setIsNewTaskFormOpen(true)}
-          >
-            Add Task
-          </Button>
-          <Button variant="outlined" onClick={handleLogout}>
-            Logout
-          </Button>
-        </Box>
-        <DndContext onDragStart={() => {}} onDragEnd={() => {}}>
+    <div className="min-h-screen bg-blue-50">
+      <header className="bg-white shadow">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+          <h1 className="text-2xl font-semibold text-gray-900">My Tasks</h1>
+          <div className="flex gap-4">
+            <button
+              onClick={() => setIsNewTaskFormOpen(true)}
+              className="btn-primary flex items-center gap-2"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Add Task
+            </button>
+            <button onClick={handleLogout} className="btn-outline">
+              Logout
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <DndContext>
           <Board board={board} onTaskMove={handleTaskMove} />
         </DndContext>
-        <NewTaskForm
-          open={isNewTaskFormOpen}
-          onClose={() => setIsNewTaskFormOpen(false)}
-          onSubmit={handleCreateTask}
-        />
-        <Snackbar
-          open={!!error}
-          autoHideDuration={6000}
-          onClose={() => setError(null)}
+      </main>
+
+      <NewTaskForm
+        open={isNewTaskFormOpen}
+        onClose={() => setIsNewTaskFormOpen(false)}
+        onSubmit={handleCreateTask}
+      />
+
+      {error && (
+        <div
+          className="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded"
+          role="alert"
         >
-          <Alert severity="error" onClose={() => setError(null)}>
-            {error}
-          </Alert>
-        </Snackbar>
-      </Container>
-    </ThemeProvider>
+          <span className="block sm:inline">{error}</span>
+          <button
+            onClick={() => setError(null)}
+            className="absolute top-0 bottom-0 right-0 px-4 py-3"
+          >
+            <svg
+              className="fill-current h-6 w-6 text-red-500"
+              role="button"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+            >
+              <title>Close</title>
+              <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
+            </svg>
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
