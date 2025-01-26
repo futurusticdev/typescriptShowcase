@@ -1,13 +1,10 @@
 const jsonServer = require("json-server");
 const cors = require("cors");
 const path = require("path");
-const express = require("express");
 
 const server = jsonServer.create();
 const router = jsonServer.router(path.join(__dirname, "db.json"));
-const middlewares = jsonServer.defaults({
-  static: path.join(__dirname, "../dist"),
-});
+const middlewares = jsonServer.defaults();
 
 // Set up CORS
 const corsOptions = {
@@ -24,20 +21,9 @@ server.get("/health", (req, res) => {
   res.json({ status: "UP" });
 });
 
-// API routes
-server.use("/api", router);
-
-// Serve static files in production
-if (process.env.NODE_ENV === "production") {
-  server.use(express.static(path.join(__dirname, "../dist")));
-
-  // Handle React routing, return all requests to React app
-  server.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "../dist", "index.html"));
-  });
-}
+server.use(router);
 
 const port = process.env.PORT || 3000;
 server.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(`JSON Server is running on port ${port}`);
 });
