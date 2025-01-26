@@ -119,7 +119,7 @@ const Board: React.FC<BoardProps> = ({
   };
 
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full flex flex-col">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
@@ -127,13 +127,13 @@ const Board: React.FC<BoardProps> = ({
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex gap-4 h-full overflow-x-auto overflow-y-hidden px-2 pb-2">
+        <div className="flex-1 flex gap-4 overflow-x-auto overflow-y-hidden p-2">
           {board.columns.map((column) => (
             <div
               key={column.id}
-              className="flex-shrink-0 w-72 bg-white/10 backdrop-blur-lg rounded-xl shadow-lg"
+              className="flex flex-col flex-shrink-0 w-72 bg-white/10 backdrop-blur-lg rounded-xl shadow-lg"
             >
-              <div className="px-3 py-2.5 flex items-center justify-between">
+              <div className="flex-shrink-0 px-3 py-2.5 flex items-center justify-between">
                 <h3 className="font-medium text-white text-sm">
                   {column.title}
                 </h3>
@@ -148,89 +148,91 @@ const Board: React.FC<BoardProps> = ({
                   </svg>
                 </button>
               </div>
-              <SortableContext
-                items={column.taskIds}
-                strategy={verticalListSortingStrategy}
-              >
-                <div className="px-2 pb-2 flex-1 overflow-y-auto max-h-[calc(100vh-12rem)]">
-                  <div className="space-y-2">
-                    {column.taskIds.map((taskId) => {
-                      const task = board.tasks[taskId];
-                      return (
-                        <TaskCard
-                          key={task.id}
-                          task={task}
-                          columnId={column.id}
-                        />
-                      );
-                    })}
-                  </div>
-                  {showNewCardInput[column.id] ? (
-                    <div className="mt-2 p-2 bg-white/5 rounded-lg">
-                      <input
-                        type="text"
-                        value={newCardTitle[column.id] || ""}
-                        onChange={(e) =>
-                          setNewCardTitle({
-                            ...newCardTitle,
-                            [column.id]: e.target.value,
-                          })
-                        }
-                        placeholder="Enter card title..."
-                        className="w-full p-2 bg-white/10 rounded-lg text-white text-sm mb-2"
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            handleAddCard(column.id);
-                          }
-                        }}
-                      />
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleAddCard(column.id)}
-                          className="px-3 py-1 bg-white/20 hover:bg-white/30 text-white rounded-lg text-sm"
-                        >
-                          Add
-                        </button>
-                        <button
-                          onClick={() =>
-                            setShowNewCardInput({
-                              ...showNewCardInput,
-                              [column.id]: false,
+              <div className="flex-1 min-h-0 px-2 pb-2">
+                <SortableContext
+                  items={column.taskIds}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="h-full overflow-y-auto">
+                    <div className="space-y-2 min-h-[1px]">
+                      {column.taskIds.map((taskId) => {
+                        const task = board.tasks[taskId];
+                        return (
+                          <TaskCard
+                            key={task.id}
+                            task={task}
+                            columnId={column.id}
+                          />
+                        );
+                      })}
+                    </div>
+                    {showNewCardInput[column.id] ? (
+                      <div className="mt-2 p-2 bg-white/5 rounded-lg">
+                        <input
+                          type="text"
+                          value={newCardTitle[column.id] || ""}
+                          onChange={(e) =>
+                            setNewCardTitle({
+                              ...newCardTitle,
+                              [column.id]: e.target.value,
                             })
                           }
-                          className="px-3 py-1 hover:bg-white/10 text-white/60 rounded-lg text-sm"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() =>
-                        setShowNewCardInput({
-                          ...showNewCardInput,
-                          [column.id]: true,
-                        })
-                      }
-                      className="mt-2 w-full py-2 px-3 flex items-center gap-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors text-sm"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                          clipRule="evenodd"
+                          placeholder="Enter card title..."
+                          className="w-full p-2 bg-white/10 rounded-lg text-white text-sm mb-2"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              handleAddCard(column.id);
+                            }
+                          }}
                         />
-                      </svg>
-                      Add a card
-                    </button>
-                  )}
-                </div>
-              </SortableContext>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleAddCard(column.id)}
+                            className="px-3 py-1 bg-white/20 hover:bg-white/30 text-white rounded-lg text-sm"
+                          >
+                            Add
+                          </button>
+                          <button
+                            onClick={() =>
+                              setShowNewCardInput({
+                                ...showNewCardInput,
+                                [column.id]: false,
+                              })
+                            }
+                            className="px-3 py-1 hover:bg-white/10 text-white/60 rounded-lg text-sm"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() =>
+                          setShowNewCardInput({
+                            ...showNewCardInput,
+                            [column.id]: true,
+                          })
+                        }
+                        className="mt-2 w-full py-2 px-3 flex items-center gap-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors text-sm"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        Add a card
+                      </button>
+                    )}
+                  </div>
+                </SortableContext>
+              </div>
             </div>
           ))}
           <div className="flex-shrink-0 w-72">
