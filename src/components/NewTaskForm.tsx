@@ -2,11 +2,16 @@ import React, { useState } from "react";
 import { Task, TaskPriority, TaskStatus } from "../types/interfaces";
 
 interface NewTaskFormProps {
+  open: boolean;
   onSubmit: (task: Partial<Task>) => void;
   onClose: () => void;
 }
 
-const NewTaskForm: React.FC<NewTaskFormProps> = ({ onSubmit, onClose }) => {
+const NewTaskForm: React.FC<NewTaskFormProps> = ({
+  open,
+  onSubmit,
+  onClose,
+}) => {
   const [task, setTask] = useState<Partial<Task>>({
     title: "",
     description: "",
@@ -18,7 +23,18 @@ const NewTaskForm: React.FC<NewTaskFormProps> = ({ onSubmit, onClose }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(task);
+    // Reset form after submission
+    setTask({
+      title: "",
+      description: "",
+      priority: "medium" as TaskPriority,
+      status: "todo" as TaskStatus,
+      dueDate: "",
+    });
+    onClose();
   };
+
+  if (!open) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
