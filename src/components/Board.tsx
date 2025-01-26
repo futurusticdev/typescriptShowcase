@@ -19,7 +19,7 @@ import TaskCard from "./TaskCard";
 interface BoardProps {
   board: BoardType;
   onTaskMove: (taskId: string, source: string, destination: string) => void;
-  onAddTask: (columnId: TaskStatus, title: string) => void;
+  onAddTask: (columnId: TaskStatus, title: string) => Promise<void>;
   onAddList: (title: string) => void;
 }
 
@@ -102,9 +102,13 @@ const Board: React.FC<BoardProps> = ({
   const handleAddCard = async (columnId: TaskStatus) => {
     const title = newCardTitle[columnId]?.trim();
     if (title) {
-      await onAddTask(columnId, title);
-      setNewCardTitle({ ...newCardTitle, [columnId]: "" });
-      setShowNewCardInput({ ...showNewCardInput, [columnId]: false });
+      try {
+        await onAddTask(columnId, title);
+        setNewCardTitle({ ...newCardTitle, [columnId]: "" });
+        setShowNewCardInput({ ...showNewCardInput, [columnId]: false });
+      } catch (error) {
+        console.error("Failed to add task:", error);
+      }
     }
   };
 
@@ -113,8 +117,8 @@ const Board: React.FC<BoardProps> = ({
     if (title) {
       onAddList(title);
       setNewListTitle("");
+      setShowNewListInput(false);
     }
-    setShowNewListInput(false);
   };
 
   return (
@@ -151,17 +155,18 @@ const Board: React.FC<BoardProps> = ({
                 <SortableContext
                   items={column.taskIds}
                   strategy={verticalListSortingStrategy}
+                  id={column.id}
                 >
                   <div className="space-y-2">
                     {column.taskIds.map((taskId) => {
                       const task = board.tasks[taskId];
-                      return (
+                      return task ? (
                         <TaskCard
                           key={task.id}
                           task={task}
                           columnId={column.id}
                         />
-                      );
+                      ) : null;
                     })}
                   </div>
                 </SortableContext>
@@ -183,6 +188,7 @@ const Board: React.FC<BoardProps> = ({
                           handleAddCard(column.id);
                         }
                       }}
+                      autoFocus
                     />
                     <div className="flex gap-2">
                       <button
@@ -246,6 +252,7 @@ const Board: React.FC<BoardProps> = ({
                       handleAddList();
                     }
                   }}
+                  autoFocus
                 />
                 <div className="flex gap-2">
                   <button
