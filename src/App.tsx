@@ -159,7 +159,7 @@ function App() {
 
   if (!token) {
     return (
-      <div className="min-h-screen bg-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#f9fafc] flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           {view === "register" ? (
             <Register onRegister={setToken} />
@@ -173,21 +173,21 @@ function App() {
 
   if (!board) {
     return (
-      <div className="min-h-screen bg-blue-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      <div className="min-h-screen bg-[#f9fafc] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#0079bf]"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-blue-50">
-      <header className="bg-white shadow">
+    <div className="min-h-screen bg-[#f9fafc]">
+      <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-semibold text-gray-900">My Tasks</h1>
+          <h1 className="text-xl font-semibold text-gray-900">My Tasks</h1>
           <div className="flex gap-4">
             <button
               onClick={() => setIsNewTaskFormOpen(true)}
-              className="btn-primary flex items-center gap-2"
+              className="bg-[#0079bf] hover:bg-[#026aa7] text-white px-4 py-2 rounded flex items-center gap-2 text-sm font-medium transition-colors"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -203,7 +203,10 @@ function App() {
               </svg>
               Add Task
             </button>
-            <button onClick={handleLogout} className="btn-outline">
+            <button
+              onClick={handleLogout}
+              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm font-medium transition-colors"
+            >
               Logout
             </button>
           </div>
@@ -222,7 +225,7 @@ function App() {
 
       {error && (
         <div
-          className="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded"
+          className="fixed bottom-4 right-4 bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg"
           role="alert"
         >
           <span className="block sm:inline">{error}</span>

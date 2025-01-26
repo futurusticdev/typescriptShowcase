@@ -41,22 +41,24 @@ const Board: React.FC<BoardProps> = ({ board, onTaskMove }) => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-theme(space.32))] bg-blue-50 p-6">
+    <div className="min-h-[calc(100vh-theme(space.32))] p-6">
       <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-        <div className="flex gap-6 overflow-x-auto pb-4">
+        <div className="flex gap-4 overflow-x-auto pb-4">
           {board.columns.map((column) => (
             <div
               key={column.id}
-              className="flex-shrink-0 w-80 bg-gray-100 rounded-lg shadow-md"
+              className="flex-shrink-0 w-72 bg-[#ebecf0] rounded-lg"
             >
-              <div className="p-4 bg-gray-200 rounded-t-lg">
-                <h3 className="font-semibold text-gray-700">{column.title}</h3>
+              <div className="px-3 py-2.5">
+                <h3 className="font-medium text-[#172b4d] text-sm">
+                  {column.title}
+                </h3>
               </div>
               <SortableContext
                 items={column.taskIds}
                 strategy={verticalListSortingStrategy}
               >
-                <div className="p-4 space-y-3 min-h-[200px]">
+                <div className="px-2 pb-2 space-y-2 min-h-[1px]">
                   {column.taskIds.map((taskId) => {
                     const task = board.tasks[taskId];
                     return (
