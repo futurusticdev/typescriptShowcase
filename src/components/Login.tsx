@@ -28,8 +28,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-400 via-purple-400 to-indigo-500 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-8 relative overflow-hidden">
+    <div className="w-screen h-screen bg-gradient-to-br from-pink-400 via-purple-400 to-indigo-500 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+      <div className="w-full sm:max-w-md bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-8 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-white/10 pointer-events-none" />
         <div className="relative">
           <div className="flex justify-center mb-8">
