@@ -1,4 +1,3 @@
-// @ts-expect-error React is used for JSX
 import React, { useState, useEffect } from "react";
 import {
   Container,
