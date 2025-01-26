@@ -6,29 +6,30 @@ import { CSS } from "@dnd-kit/utilities";
 interface TaskCardProps {
   task: Task;
   columnId: string;
+  isDragging?: boolean;
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, columnId }) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
-    id: task.id,
-    data: {
-      type: "Task",
-      task,
-      columnId,
-    },
-  });
+const TaskCard: React.FC<TaskCardProps> = ({ task, columnId, isDragging }) => {
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({
+      id: task.id,
+      data: {
+        type: "Task",
+        task,
+        columnId,
+      },
+    });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
+  const style: React.CSSProperties = {
+    touchAction: "none",
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    position: "relative" as const,
+    zIndex: isDragging ? 999 : "auto",
+    ...(CSS.Transform.toString(transform)
+      ? {
+          transform: `${CSS.Transform.toString(transform)} translate3d(0,0,0)`,
+        }
+      : { transform: "translate3d(0,0,0)" }),
   };
 
   const priorityColors = {
@@ -43,7 +44,9 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, columnId }) => {
       style={style}
       {...attributes}
       {...listeners}
-      className={`p-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg cursor-grab active:cursor-grabbing group transition-colors`}
+      className={`p-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg cursor-grab active:cursor-grabbing group transition-colors ${
+        isDragging ? "opacity-50" : ""
+      }`}
     >
       <div className="flex flex-col gap-2">
         <h4 className="text-sm font-medium text-white group-hover:text-white/90">

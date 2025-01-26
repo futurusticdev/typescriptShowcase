@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -8,6 +8,7 @@ import {
   useSensors,
   PointerSensor,
   closestCorners,
+  DragOverlay,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -30,6 +31,7 @@ const Board: React.FC<BoardProps> = ({
   onAddList,
 }) => {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [activeColumn, setActiveColumn] = useState<string | null>(null);
   const [newCardTitle, setNewCardTitle] = useState<{ [key: string]: string }>(
     {}
   );
@@ -43,6 +45,8 @@ const Board: React.FC<BoardProps> = ({
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 5,
+        delay: 0,
+        tolerance: 0,
       },
     })
   );
@@ -51,53 +55,61 @@ const Board: React.FC<BoardProps> = ({
     const { active } = event;
     const task = board.tasks[active.id as string];
     setActiveTask(task);
+    setActiveColumn(active.data.current?.columnId);
   };
 
-  const handleDragOver = (event: DragOverEvent) => {
-    const { active, over } = event;
-    if (!over) return;
+  const handleDragOver = useCallback(
+    (event: DragOverEvent) => {
+      const { active, over } = event;
+      if (!over) return;
 
-    const activeId = active.id;
-    const overId = over.id;
+      const activeId = active.id;
+      const overId = over.id;
 
-    if (activeId === overId) return;
+      if (activeId === overId) return;
 
-    const activeData = active.data.current;
-    const overData = over.data.current;
+      const activeData = active.data.current;
+      const overData = over.data.current;
 
-    if (!activeData || !overData) return;
+      if (!activeData || !overData) return;
 
-    if (activeData.type === "Task" && overData.columnId) {
-      const activeColumnId = activeData.columnId;
-      const overColumnId = overData.columnId;
+      if (activeData.type === "Task" && overData.columnId) {
+        const activeColumnId = activeData.columnId;
+        const overColumnId = overData.columnId;
 
-      if (activeColumnId !== overColumnId) {
-        onTaskMove(activeId as string, activeColumnId, overColumnId);
+        if (activeColumnId !== overColumnId) {
+          onTaskMove(activeId as string, activeColumnId, overColumnId);
+        }
       }
-    }
-  };
+    },
+    [onTaskMove]
+  );
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over) return;
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over) return;
 
-    const activeData = active.data.current;
-    const overData = over.data.current;
+      const activeData = active.data.current;
+      const overData = over.data.current;
 
-    if (!activeData || !overData) return;
+      if (!activeData || !overData) return;
 
-    if (activeData.type === "Task" && overData.columnId) {
-      const taskId = active.id as string;
-      const sourceColumn = activeData.columnId;
-      const destinationColumn = overData.columnId;
+      if (activeData.type === "Task" && overData.columnId) {
+        const taskId = active.id as string;
+        const sourceColumn = activeData.columnId;
+        const destinationColumn = overData.columnId;
 
-      if (sourceColumn !== destinationColumn) {
-        onTaskMove(taskId, sourceColumn, destinationColumn);
+        if (sourceColumn !== destinationColumn) {
+          onTaskMove(taskId, sourceColumn, destinationColumn);
+        }
       }
-    }
 
-    setActiveTask(null);
-  };
+      setActiveTask(null);
+      setActiveColumn(null);
+    },
+    [onTaskMove]
+  );
 
   const handleAddCard = async (columnId: TaskStatus) => {
     const title = newCardTitle[columnId]?.trim();
@@ -151,11 +163,11 @@ const Board: React.FC<BoardProps> = ({
                   </svg>
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto px-2 pb-2">
+              <div className="flex-1 overflow-y-auto px-2 pb-2 touch-none">
                 <SortableContext
                   items={column.taskIds}
                   strategy={verticalListSortingStrategy}
-                  id={column.id}
+                  key={`${column.id}-${column.taskIds.length}`}
                 >
                   <div className="space-y-2">
                     {column.taskIds.map((taskId) => {
@@ -165,6 +177,7 @@ const Board: React.FC<BoardProps> = ({
                           key={task.id}
                           task={task}
                           columnId={column.id}
+                          isDragging={activeTask?.id === task.id}
                         />
                       ) : null;
                     })}
@@ -291,6 +304,15 @@ const Board: React.FC<BoardProps> = ({
             )}
           </div>
         </div>
+        <DragOverlay>
+          {activeTask ? (
+            <TaskCard
+              task={activeTask}
+              columnId={activeColumn || ""}
+              isDragging={true}
+            />
+          ) : null}
+        </DragOverlay>
       </DndContext>
     </div>
   );
