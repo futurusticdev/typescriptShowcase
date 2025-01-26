@@ -7,7 +7,7 @@
   },
   "scripts": {
     "start": "node server.js",
-    "dev": "json-server --watch db.json --port 3001"
+    "dev": "json-server --watch db.json --port 10000 --host 0.0.0.0"
   },
   "keywords": [],
   "author": "",

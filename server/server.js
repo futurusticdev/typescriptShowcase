@@ -25,7 +25,10 @@ server.get("/health", (req, res) => {
 
 server.use(router);
 
-const port = process.env.PORT || 3001;
-server.listen(port, () => {
-  console.log(`JSON Server is running on port ${port}`);
+// Important: Bind to the correct host and port for Render.com
+const port = process.env.PORT || 10000; // Render.com default port is 10000
+const host = "0.0.0.0"; // Required for Render.com
+
+server.listen(port, host, () => {
+  console.log(`JSON Server is running on ${host}:${port}`);
 });
