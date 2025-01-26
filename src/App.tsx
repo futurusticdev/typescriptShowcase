@@ -13,8 +13,8 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import Board from "./components/Board";
 import NewTaskForm from "./components/NewTaskForm.tsx";
-import { Board as BoardType, Task } from "./types";
-import { api } from "./services/api";
+import { Board as BoardType, Task, TaskStatus } from "./types/interfaces";
+import { getTasks, createTask, updateTask } from "./services/api";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import { DndContext, DragEndEvent, DragStartEvent } from "@dnd-kit/core";
@@ -24,9 +24,13 @@ const theme = createTheme();
 
 const createInitialBoard = (tasks: Task[]): BoardType => {
   const columns = [
-    { id: "todo", title: "To Do", taskIds: [] as string[] },
-    { id: "inprogress", title: "In Progress", taskIds: [] as string[] },
-    { id: "done", title: "Done", taskIds: [] as string[] },
+    { id: "todo" as TaskStatus, title: "To Do", taskIds: [] as string[] },
+    {
+      id: "inprogress" as TaskStatus,
+      title: "In Progress",
+      taskIds: [] as string[],
+    },
+    { id: "done" as TaskStatus, title: "Done", taskIds: [] as string[] },
   ];
 
   const tasksById: { [key: string]: Task } = {};
@@ -81,7 +85,7 @@ function App() {
 
   const fetchTasks = async () => {
     try {
-      const tasks = await api.getTasks();
+      const tasks = await getTasks();
       setBoard(createInitialBoard(tasks));
     } catch (error) {
       console.error("Error fetching tasks:", error);
@@ -93,8 +97,8 @@ function App() {
 
   const handleTaskMove = async (
     taskId: string,
-    sourceColumn: string,
-    destinationColumn: string
+    sourceColumn: TaskStatus,
+    destinationColumn: TaskStatus
   ) => {
     if (!board) return;
 
@@ -129,13 +133,13 @@ function App() {
       });
 
       // Update the server
-      await api.updateTask(taskId, {
+      await updateTask(taskId, {
         status: destinationColumn as Task["status"],
       });
     } catch (err) {
       setError("Failed to move task. Please try again.");
       // Revert the changes by refetching the board
-      const tasks = await api.getTasks();
+      const tasks = await getTasks();
       setBoard(createInitialBoard(tasks));
     }
   };
@@ -144,7 +148,7 @@ function App() {
     taskData: Omit<Task, "id" | "createdAt" | "updatedAt">
   ) => {
     try {
-      const newTask = await api.createTask(taskData);
+      const newTask = await createTask(taskData);
       setBoard((prev) => {
         if (!prev) return prev;
         const newBoard = { ...prev };
