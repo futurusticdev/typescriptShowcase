@@ -18,9 +18,9 @@ const theme = createTheme();
 
 const createInitialBoard = (tasks: Task[]): BoardType => {
   const columns = [
-    { id: "todo", title: "To Do", taskIds: [] },
-    { id: "inprogress", title: "In Progress", taskIds: [] },
-    { id: "done", title: "Done", taskIds: [] },
+    { id: "todo", title: "To Do", taskIds: [] as string[] },
+    { id: "inprogress", title: "In Progress", taskIds: [] as string[] },
+    { id: "done", title: "Done", taskIds: [] as string[] },
   ];
 
   const tasksById: { [key: string]: Task } = {};

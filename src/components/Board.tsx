@@ -11,7 +11,6 @@ import {
   DragOverlay,
 } from "@dnd-kit/core";
 import {
-  arrayMove,
   SortableContext,
   horizontalListSortingStrategy,
 } from "@dnd-kit/sortable";
