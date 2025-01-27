@@ -7,7 +7,7 @@ import {
   useSensor,
   useSensors,
   PointerSensor,
-  closestCorners,
+  rectIntersection,
   DragOverlay,
 } from "@dnd-kit/core";
 import {
@@ -21,7 +21,7 @@ import TaskCard from "./TaskCard";
 interface BoardProps {
   board: BoardType;
   onTaskMove: (taskId: string, source: string, destination: string) => void;
-  onAddTask: (columnId: TaskStatus, title: string) => Promise<void>;
+  onAddTask: (title: string, columnId: TaskStatus) => Promise<void>;
   onAddList: (title: string) => void;
 }
 
@@ -46,8 +46,6 @@ const Board: React.FC<BoardProps> = ({
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 5,
-        delay: 0,
-        tolerance: 5,
       },
     })
   );
@@ -67,31 +65,24 @@ const Board: React.FC<BoardProps> = ({
       const activeId = active.id as string;
       const overId = over.id as string;
 
+      // Prevent self-drag
       if (activeId === overId) return;
 
       const activeData = active.data.current;
       const overData = over.data.current;
 
-      if (!activeData) return;
-
-      // Handle dropping on a column
+      // Handle column drops
       if (overData?.type === "Column") {
-        const sourceColumnId = activeData.columnId;
-        const destinationColumnId = overId;
-
-        if (sourceColumnId !== destinationColumnId) {
-          onTaskMove(activeId, sourceColumnId, destinationColumnId);
+        if (activeData?.columnId !== overData.columnId) {
+          onTaskMove(activeId, activeData?.columnId, overData.columnId);
         }
         return;
       }
 
-      // Handle dropping on another task
+      // Handle task drops
       if (overData?.type === "Task") {
-        const sourceColumnId = activeData.columnId;
-        const destinationColumnId = overData.columnId;
-
-        if (sourceColumnId !== destinationColumnId) {
-          onTaskMove(activeId, sourceColumnId, destinationColumnId);
+        if (activeData?.columnId !== overData.columnId) {
+          onTaskMove(activeId, activeData?.columnId, overData.columnId);
         }
       }
     },
@@ -141,7 +132,7 @@ const Board: React.FC<BoardProps> = ({
     const title = newCardTitle[columnId]?.trim();
     if (title) {
       try {
-        await onAddTask(columnId, title);
+        await onAddTask(title, columnId);
         setNewCardTitle({ ...newCardTitle, [columnId]: "" });
         setShowNewCardInput({ ...showNewCardInput, [columnId]: false });
       } catch (error) {
@@ -163,7 +154,7 @@ const Board: React.FC<BoardProps> = ({
     <div className="h-full w-full flex flex-col">
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCorners}
+        collisionDetection={rectIntersection}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
@@ -234,7 +225,7 @@ const Board: React.FC<BoardProps> = ({
                         }
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && newCardTitle[column.id]) {
-                            onAddTask(column.id, newCardTitle[column.id]);
+                            onAddTask(newCardTitle[column.id], column.id);
                             setNewCardTitle({
                               ...newCardTitle,
                               [column.id]: "",
@@ -253,7 +244,7 @@ const Board: React.FC<BoardProps> = ({
                         <button
                           onClick={() => {
                             if (newCardTitle[column.id]) {
-                              onAddTask(column.id, newCardTitle[column.id]);
+                              onAddTask(newCardTitle[column.id], column.id);
                               setNewCardTitle({
                                 ...newCardTitle,
                                 [column.id]: "",
