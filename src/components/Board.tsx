@@ -23,13 +23,14 @@ interface BoardProps {
   onTaskMove: (taskId: string, source: string, destination: string) => void;
   onAddTask: (title: string, columnId: TaskStatus) => Promise<void>;
   onAddList: (title: string) => void;
+  onDelete: (taskId: string) => Promise<void>;
 }
-
 const Board: React.FC<BoardProps> = ({
   board,
   onTaskMove,
   onAddTask,
   onAddList,
+  onDelete,
 }) => {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [activeColumn, setActiveColumn] = useState<string | null>(null);
@@ -167,6 +168,7 @@ const Board: React.FC<BoardProps> = ({
                             task={task}
                             columnId={column.id}
                             isDragging={activeTask?.id === task.id}
+                            onDelete={onDelete}
                           />
                         ) : null;
                       })}
@@ -183,6 +185,7 @@ const Board: React.FC<BoardProps> = ({
               task={activeTask}
               columnId={activeColumn || ""}
               isDragging={true}
+              onDelete={onDelete}
             />
           ) : null}
         </DragOverlay>

@@ -8,7 +8,7 @@ import {
   TaskPriority,
   VALID_STATUSES
 } from "./types/interfaces";
-import { getTasks, createTask, updateTask } from "./services/api";
+import { getTasks, createTask, updateTask, deleteTask } from "./services/api";
 import Login from "./components/Login";
 import Register from "./components/Register";
 
@@ -131,6 +131,31 @@ function App() {
       // Revert the changes by refetching the board
       const tasks = await getTasks();
       setBoard(createInitialBoard(tasks));
+    }
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    try {
+      // Optimistic update
+      setBoard((prev) => {
+        if (!prev) return prev;
+        const newBoard = {
+          ...prev,
+          tasks: { ...prev.tasks },
+          columns: prev.columns.map(col => ({
+            ...col,
+            taskIds: col.taskIds.filter(id => id !== taskId)
+          }))
+        };
+        delete newBoard.tasks[taskId];
+        return newBoard;
+      });
+
+      await deleteTask(taskId);
+    } catch (error) {
+      setError('Failed to delete task');
+      // Revert optimistic update
+      fetchTasks();
     }
   };
 
@@ -268,6 +293,7 @@ function App() {
           onTaskMove={handleTaskMove}
           onAddTask={handleQuickAddTask}
           onAddList={handleAddList}
+          onDelete={handleDeleteTask}
         />
       </main>
 
