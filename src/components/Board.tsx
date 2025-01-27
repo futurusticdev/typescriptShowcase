@@ -33,14 +33,6 @@ const Board: React.FC<BoardProps> = ({
 }) => {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [activeColumn, setActiveColumn] = useState<string | null>(null);
-  const [newCardTitle, setNewCardTitle] = useState<{ [key: string]: string }>(
-    {}
-  );
-  const [showNewCardInput, setShowNewCardInput] = useState<{
-    [key: string]: boolean;
-  }>({});
-  const [showNewListInput, setShowNewListInput] = useState(false);
-  const [newListTitle, setNewListTitle] = useState("");
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -128,28 +120,6 @@ const Board: React.FC<BoardProps> = ({
     [onTaskMove]
   );
 
-  const handleAddCard = async (columnId: TaskStatus) => {
-    const title = newCardTitle[columnId]?.trim();
-    if (title) {
-      try {
-        await onAddTask(title, columnId);
-        setNewCardTitle({ ...newCardTitle, [columnId]: "" });
-        setShowNewCardInput({ ...showNewCardInput, [columnId]: false });
-      } catch (error) {
-        console.error("Failed to add task:", error);
-      }
-    }
-  };
-
-  const handleAddList = () => {
-    const title = newListTitle.trim();
-    if (title) {
-      onAddList(title);
-      setNewListTitle("");
-      setShowNewListInput(false);
-    }
-  };
-
   return (
     <div className="h-full w-full flex flex-col">
       <DndContext
@@ -212,119 +182,10 @@ const Board: React.FC<BoardProps> = ({
                       })}
                     </div>
                   </SortableContext>
-                  {showNewCardInput[column.id] ? (
-                    <div className="mt-2">
-                      <input
-                        type="text"
-                        value={newCardTitle[column.id] || ""}
-                        onChange={(e) =>
-                          setNewCardTitle({
-                            ...newCardTitle,
-                            [column.id]: e.target.value,
-                          })
-                        }
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && newCardTitle[column.id]) {
-                            // Ensure column.id is a valid TaskStatus
-                            const status = column.id as TaskStatus;
-                            if (VALID_STATUSES.includes(status)) {
-                              onAddTask(newCardTitle[column.id], status);
-                              setNewCardTitle({
-                                ...newCardTitle,
-                                [column.id]: "",
-                              });
-                              setShowNewCardInput({
-                                ...showNewCardInput,
-                                [column.id]: false,
-                              });
-                            } else {
-                              console.error(`Invalid status: ${status}`);
-                            }
-                          }
-                        }}
-                        placeholder="Enter a title for this card..."
-                        className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/50 focus:outline-none focus:border-white/30"
-                        autoFocus
-                      />
-                      <div className="flex items-center gap-2 mt-2">
-                        <button
-                          onClick={() => {
-                            if (newCardTitle[column.id]) {
-                              // Ensure column.id is a valid TaskStatus
-                              const status = column.id as TaskStatus;
-                              if (VALID_STATUSES.includes(status)) {
-                                onAddTask(newCardTitle[column.id], status);
-                                setNewCardTitle({
-                                  ...newCardTitle,
-                                  [column.id]: "",
-                                });
-                              } else {
-                                console.error(`Invalid status: ${status}`);
-                              }
-                            }
-                            setShowNewCardInput({
-                              ...showNewCardInput,
-                              [column.id]: false,
-                            });
-                          }}
-                          className="bg-white/20 hover:bg-white/30 text-white text-sm px-3 py-1.5 rounded-lg transition-colors"
-                        >
-                          Add card
-                        </button>
-                        <button
-                          onClick={() =>
-                            setShowNewCardInput({
-                              ...showNewCardInput,
-                              [column.id]: false,
-                            })
-                          }
-                          className="text-white/60 hover:text-white/80 transition-colors"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() =>
-                        setShowNewCardInput({
-                          ...showNewCardInput,
-                          [column.id]: true,
-                        })
-                      }
-                      className="w-full mt-2 flex items-center gap-1 text-white/60 hover:text-white/80 text-sm px-2 py-1.5 rounded-lg hover:bg-white/10 transition-colors"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      Add a card
-                    </button>
-                  )}
                 </div>
               </div>
             );
           })}
-          {/* Removed "Add another list" section since we only support predefined columns */}
         </div>
         <DragOverlay dropAnimation={null}>
           {activeTask ? (
