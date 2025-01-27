@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Board from "./components/Board";
+import NewTaskForm from "./components/NewTaskForm";
 import {
   Board as BoardType,
   Task,
@@ -39,6 +40,7 @@ const createInitialBoard = (tasks: Task[]): BoardType => {
 
 function App() {
   const [board, setBoard] = useState<BoardType | null>(null);
+  const [isNewTaskFormOpen, setIsNewTaskFormOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(
     localStorage.getItem("token")
@@ -222,6 +224,24 @@ function App() {
           </div>
           <div className="flex items-center gap-3">
             <button
+              onClick={() => setIsNewTaskFormOpen(true)}
+              className="bg-white/10 hover:bg-white/20 text-white px-4 py-1.5 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Add Task
+            </button>
+            <button
               onClick={handleLogout}
               className="p-2 hover:bg-white/10 rounded-lg transition-colors"
             >
@@ -250,6 +270,12 @@ function App() {
           onAddList={handleAddList}
         />
       </main>
+
+      <NewTaskForm
+        open={isNewTaskFormOpen}
+        onClose={() => setIsNewTaskFormOpen(false)}
+        onSubmit={handleCreateTask}
+      />
 
       {error && (
         <div
