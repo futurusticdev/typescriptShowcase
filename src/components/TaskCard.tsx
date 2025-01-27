@@ -1,38 +1,21 @@
 import React from "react";
 import { Task } from "../types/interfaces";
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 
 interface TaskCardProps {
   task: Task;
   columnId: string;
   isDragging?: boolean;
   onDelete?: (taskId: string) => Promise<void>;
+  onDragStart?: (e: React.MouseEvent, task: Task, columnId: string) => void;
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, columnId, isDragging, onDelete }) => {
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({
-      id: task.id,
-      data: {
-        type: "Task",
-        task,
-        columnId,
-      },
-    });
-
-  const style: React.CSSProperties = {
-    touchAction: "none",
-    transition,
-    position: "relative" as const,
-    zIndex: isDragging ? 999 : "auto",
-    ...(CSS.Transform.toString(transform)
-      ? {
-          transform: `${CSS.Transform.toString(transform)} translate3d(0,0,0)`,
-        }
-      : { transform: "translate3d(0,0,0)" }),
-  };
-
+export const TaskCard: React.FC<TaskCardProps> = ({
+  task,
+  columnId,
+  isDragging,
+  onDelete,
+  onDragStart
+}) => {
   const priorityColors = {
     low: "bg-blue-500/20",
     medium: "bg-yellow-500/20",
@@ -41,13 +24,13 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, columnId, isDragging, onDelet
 
   return (
     <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
+      onMouseDown={(e) => onDragStart?.(e, task, columnId)}
       className={`p-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg cursor-grab active:cursor-grabbing group transition-colors ${
         isDragging ? "opacity-50" : ""
       }`}
+      style={{
+        touchAction: "none",
+      }}
     >
       <div className="flex flex-col gap-2">
         <h4 className="text-sm font-medium text-white group-hover:text-white/90">
