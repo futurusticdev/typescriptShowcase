@@ -7,13 +7,12 @@ import {
   useSensor,
   useSensors,
   PointerSensor,
-  rectIntersection,
+  closestCorners,
   DragOverlay,
 } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
-  arrayMove,
 } from "@dnd-kit/sortable";
 import { useDroppable } from "@dnd-kit/core";
 import { Board as BoardType, Task, TaskStatus } from "../types/interfaces";
@@ -164,7 +163,7 @@ const Board: React.FC<BoardProps> = ({
     <div className="h-full w-full flex flex-col">
       <DndContext
         sensors={sensors}
-        collisionDetection={rectIntersection}
+        collisionDetection={closestCorners}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
@@ -183,6 +182,8 @@ const Board: React.FC<BoardProps> = ({
               <div
                 key={column.id}
                 ref={setNodeRef}
+                data-type="Column"
+                data-column-id={column.id}
                 className="flex flex-col flex-shrink-0 w-72 bg-white/10 backdrop-blur-lg rounded-xl shadow-lg max-h-full"
               >
                 <div className="flex-shrink-0 px-3 py-2.5 flex items-center justify-between">
@@ -221,7 +222,7 @@ const Board: React.FC<BoardProps> = ({
                     </div>
                   </SortableContext>
                   {showNewCardInput[column.id] ? (
-                    <div className="mt-2 p-2 bg-white/5 rounded-lg">
+                    <div className="mt-2">
                       <input
                         type="text"
                         value={newCardTitle[column.id] || ""}
@@ -231,21 +232,41 @@ const Board: React.FC<BoardProps> = ({
                             [column.id]: e.target.value,
                           })
                         }
-                        placeholder="Enter card title..."
-                        className="w-full p-2 bg-white/10 rounded-lg text-white text-sm mb-2"
                         onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            handleAddCard(column.id);
+                          if (e.key === "Enter" && newCardTitle[column.id]) {
+                            onAddTask(column.id, newCardTitle[column.id]);
+                            setNewCardTitle({
+                              ...newCardTitle,
+                              [column.id]: "",
+                            });
+                            setShowNewCardInput({
+                              ...showNewCardInput,
+                              [column.id]: false,
+                            });
                           }
                         }}
+                        placeholder="Enter a title for this card..."
+                        className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/50 focus:outline-none focus:border-white/30"
                         autoFocus
                       />
-                      <div className="flex gap-2">
+                      <div className="flex items-center gap-2 mt-2">
                         <button
-                          onClick={() => handleAddCard(column.id)}
-                          className="px-3 py-1 bg-white/20 hover:bg-white/30 text-white rounded-lg text-sm"
+                          onClick={() => {
+                            if (newCardTitle[column.id]) {
+                              onAddTask(column.id, newCardTitle[column.id]);
+                              setNewCardTitle({
+                                ...newCardTitle,
+                                [column.id]: "",
+                              });
+                            }
+                            setShowNewCardInput({
+                              ...showNewCardInput,
+                              [column.id]: false,
+                            });
+                          }}
+                          className="bg-white/20 hover:bg-white/30 text-white text-sm px-3 py-1.5 rounded-lg transition-colors"
                         >
-                          Add
+                          Add card
                         </button>
                         <button
                           onClick={() =>
@@ -254,9 +275,20 @@ const Board: React.FC<BoardProps> = ({
                               [column.id]: false,
                             })
                           }
-                          className="px-3 py-1 hover:bg-white/10 text-white/60 rounded-lg text-sm"
+                          className="text-white/60 hover:text-white/80 transition-colors"
                         >
-                          Cancel
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
                         </button>
                       </div>
                     </div>
@@ -268,7 +300,7 @@ const Board: React.FC<BoardProps> = ({
                           [column.id]: true,
                         })
                       }
-                      className="mt-2 w-full py-2 px-3 flex items-center gap-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors text-sm"
+                      className="w-full mt-2 flex items-center gap-1 text-white/60 hover:text-white/80 text-sm px-2 py-1.5 rounded-lg hover:bg-white/10 transition-colors"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -291,39 +323,58 @@ const Board: React.FC<BoardProps> = ({
           })}
           <div className="flex-shrink-0 w-72">
             {showNewListInput ? (
-              <div className="p-2 bg-white/10 backdrop-blur-lg rounded-xl">
+              <div className="bg-white/10 backdrop-blur-lg rounded-xl shadow-lg p-2">
                 <input
                   type="text"
                   value={newListTitle}
                   onChange={(e) => setNewListTitle(e.target.value)}
-                  placeholder="Enter list title..."
-                  className="w-full p-2 bg-white/10 rounded-lg text-white text-sm mb-2"
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleAddList();
+                    if (e.key === "Enter" && newListTitle) {
+                      onAddList(newListTitle);
+                      setNewListTitle("");
+                      setShowNewListInput(false);
                     }
                   }}
+                  placeholder="Enter list title..."
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/50 focus:outline-none focus:border-white/30"
                   autoFocus
                 />
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2 mt-2">
                   <button
-                    onClick={handleAddList}
-                    className="px-3 py-1 bg-white/20 hover:bg-white/30 text-white rounded-lg text-sm"
+                    onClick={() => {
+                      if (newListTitle) {
+                        onAddList(newListTitle);
+                        setNewListTitle("");
+                      }
+                      setShowNewListInput(false);
+                    }}
+                    className="bg-white/20 hover:bg-white/30 text-white text-sm px-3 py-1.5 rounded-lg transition-colors"
                   >
-                    Add
+                    Add list
                   </button>
                   <button
                     onClick={() => setShowNewListInput(false)}
-                    className="px-3 py-1 hover:bg-white/10 text-white/60 rounded-lg text-sm"
+                    className="text-white/60 hover:text-white/80 transition-colors"
                   >
-                    Cancel
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
                   </button>
                 </div>
               </div>
             ) : (
               <button
                 onClick={() => setShowNewListInput(true)}
-                className="w-full h-10 bg-white/10 hover:bg-white/20 backdrop-blur-lg rounded-xl text-white/80 hover:text-white flex items-center justify-center gap-2 transition-colors text-sm"
+                className="w-full h-10 flex items-center gap-1 text-white/60 hover:text-white/80 px-4 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-lg transition-colors"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
