@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from "react";
-import { Board as BoardType, Task, TaskStatus } from "../types/interfaces";
+import { Board as BoardType, Task, TaskStatus, Column } from "../types/interfaces";
 import { TaskCard } from "./TaskCard";
+import { NewColumnButton } from "./NewColumnButton";
 
 interface BoardProps {
   board: BoardType;
@@ -24,6 +25,7 @@ export const Board: React.FC<BoardProps> = ({
   const [dragStartColumn, setDragStartColumn] = useState<string | null>(null);
 
   const handleDragStart = (e: React.MouseEvent, task: Task, columnId: string) => {
+    e.preventDefault(); // Prevent text selection
     const element = e.currentTarget as HTMLElement;
     const rect = element.getBoundingClientRect();
     setDraggedTask(task);
@@ -41,6 +43,7 @@ export const Board: React.FC<BoardProps> = ({
 
   const handleDragMove = useCallback((e: MouseEvent) => {
     if (draggedTask) {
+      e.preventDefault(); // Prevent text selection during drag
       setMousePosition({
         x: e.clientX,
         y: e.clientY
@@ -92,14 +95,14 @@ export const Board: React.FC<BoardProps> = ({
   }, [handleDragMove, handleDragEnd]);
 
   return (
-    <div className="h-full w-full flex flex-col">
+    <div className="h-full w-full flex flex-col select-none">
       <div className="flex-1 flex gap-4 overflow-x-auto overflow-y-hidden p-2">
         {board.columns.map((column) => (
           <div
             key={column.id}
             data-column-id={column.id}
-            className={`flex flex-col flex-shrink-0 w-72 bg-white/10 backdrop-blur-lg rounded-xl shadow-lg max-h-full transition-all duration-200
-              ${draggedTask && dragStartColumn !== column.id ? 'ring-2 ring-white/30' : ''}`}
+            className={`flex flex-col flex-shrink-0 w-72 bg-white/10 dark:bg-black/20 backdrop-blur-lg rounded-xl shadow-lg max-h-full transition-all duration-200
+              ${draggedTask && dragStartColumn !== column.id ? 'ring-2 ring-white/30 dark:ring-white/50' : ''}`}
           >
             <div className="flex-shrink-0 px-3 py-2.5">
               <h3 className="font-medium text-white text-sm">
@@ -124,6 +127,7 @@ export const Board: React.FC<BoardProps> = ({
             </div>
           </div>
         ))}
+        <NewColumnButton onAdd={onAddList} />
       </div>
       {draggedTask && draggedTaskRect && (
         <div
@@ -149,5 +153,3 @@ export const Board: React.FC<BoardProps> = ({
     </div>
   );
 };
-
-export default Board;

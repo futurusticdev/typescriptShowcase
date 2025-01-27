@@ -215,9 +215,22 @@ function App() {
     }
   };
 
-  // Removed handleAddList as we only want to support the predefined columns
   const handleAddList = (title: string) => {
-    console.warn("Adding new lists is not supported. Only predefined statuses (todo, inprogress, done) are allowed.");
+    setBoard((prev) => {
+      if (!prev) return prev;
+      
+      const newColumnId = `custom-${Date.now()}` as TaskStatus;
+      const newColumn = {
+        id: newColumnId,
+        title,
+        taskIds: [],
+      };
+
+      return {
+        ...prev,
+        columns: [...prev.columns, newColumn],
+      };
+    });
   };
 
   const handleLogout = () => {

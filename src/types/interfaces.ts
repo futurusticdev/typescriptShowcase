@@ -1,5 +1,6 @@
 // Task related types
-export type TaskStatus = "todo" | "inprogress" | "done";
+export type BaseTaskStatus = "todo" | "inprogress" | "done";
+export type TaskStatus = BaseTaskStatus | `custom-${number}`;
 export type TaskPriority = "low" | "medium" | "high";
 
 // Valid status values

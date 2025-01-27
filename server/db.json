@@ -87,10 +87,10 @@
       "title": "asdad",
       "description": "asdasd",
       "priority": "medium",
-      "status": "inprogress",
+      "status": "todo",
       "dueDate": "",
       "createdAt": "2025-01-27T20:56:40.084Z",
-      "updatedAt": "2025-01-27T21:27:20.454Z",
+      "updatedAt": "2025-01-27T21:47:44.700Z",
       "id": "1738011400091",
       "userId": "1738007618027"
     },
@@ -98,10 +98,10 @@
       "title": "xxxxx",
       "description": "asdqqwdqd",
       "priority": "medium",
-      "status": "todo",
+      "status": "custom-1738014763021",
       "dueDate": "",
       "createdAt": "2025-01-27T21:10:18.557Z",
-      "updatedAt": "2025-01-27T21:27:43.917Z",
+      "updatedAt": "2025-01-27T21:52:50.422Z",
       "id": "1738012218563",
       "userId": "1738007618027"
     },
@@ -109,10 +109,10 @@
       "title": "v mbvbmv",
       "description": "dfdgdg",
       "priority": "medium",
-      "status": "inprogress",
+      "status": "todo",
       "dueDate": "",
       "createdAt": "2025-01-27T21:27:37.562Z",
-      "updatedAt": "2025-01-27T21:27:40.790Z",
+      "updatedAt": "2025-01-27T21:47:36.453Z",
       "id": "1738013257568",
       "userId": "1738007618027"
     }

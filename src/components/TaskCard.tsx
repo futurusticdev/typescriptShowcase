@@ -24,12 +24,18 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
   return (
     <div
-      onMouseDown={(e) => onDragStart?.(e, task, columnId)}
-      className={`p-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg cursor-grab active:cursor-grabbing group transition-colors ${
+      onMouseDown={(e) => {
+        e.preventDefault(); // Prevent text selection
+        onDragStart?.(e, task, columnId);
+      }}
+      className={`p-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg cursor-grab active:cursor-grabbing group transition-colors select-none ${
         isDragging ? "opacity-50" : ""
       }`}
       style={{
         touchAction: "none",
+        WebkitUserSelect: "none",
+        MozUserSelect: "none",
+        msUserSelect: "none",
       }}
     >
       <div className="flex flex-col gap-2">
