@@ -212,20 +212,6 @@ function App() {
         <div className="max-w-7xl mx-auto h-14 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
           <div className="flex items-center gap-4">
             <h1 className="text-xl font-semibold text-white">My Tasks</h1>
-            <button className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-white/60"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
           </div>
           <div className="flex items-center gap-3">
             <button
