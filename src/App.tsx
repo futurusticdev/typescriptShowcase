@@ -6,21 +6,22 @@ import {
   Task,
   TaskStatus,
   TaskPriority,
+  VALID_STATUSES
 } from "./types/interfaces";
 import { getTasks, createTask, updateTask } from "./services/api";
 import Login from "./components/Login";
 import Register from "./components/Register";
 
 const createInitialBoard = (tasks: Task[]): BoardType => {
-  const columns = [
-    { id: "todo" as TaskStatus, title: "To Do", taskIds: [] as string[] },
-    {
-      id: "inprogress" as TaskStatus,
-      title: "In Progress",
-      taskIds: [] as string[],
-    },
-    { id: "done" as TaskStatus, title: "Done", taskIds: [] as string[] },
-  ];
+  const columns = VALID_STATUSES.map(status => {
+    const title = status === "inprogress" ? "In Progress" :
+                  status === "todo" ? "To Do" : "Done";
+    return {
+      id: status,
+      title,
+      taskIds: [] as string[]
+    };
+  });
 
   const tasksById: { [key: string]: Task } = {};
   tasks.forEach((task) => {
@@ -137,7 +138,12 @@ function App() {
     taskData: Omit<Task, "id" | "createdAt" | "updatedAt">
   ) => {
     try {
-      const newTask = await createTask(taskData);
+      // Ensure task has a valid status
+      const taskWithStatus = {
+        ...taskData,
+        status: taskData.status || "todo" as TaskStatus
+      };
+      const newTask = await createTask(taskWithStatus);
       setBoard((prev) => {
         if (!prev) return prev;
         const newBoard = { ...prev };
@@ -149,7 +155,11 @@ function App() {
         const columnIndex = newBoard.columns.findIndex(
           (col) => col.id === newTask.status
         );
-        newBoard.columns[columnIndex].taskIds.push(newTask.id);
+        if (columnIndex !== -1) {
+          newBoard.columns[columnIndex].taskIds.push(newTask.id);
+        } else {
+          console.error(`Column with status ${newTask.status} not found`);
+        }
 
         return newBoard;
       });
@@ -159,31 +169,30 @@ function App() {
   };
 
   const handleQuickAddTask = async (columnId: TaskStatus, title: string) => {
-    const taskData = {
-      title,
-      description: "",
-      status: columnId,
-      priority: "medium" as TaskPriority,
-      dueDate: null,
-      userId: localStorage.getItem("userId") || "",
-    };
-    await handleCreateTask(taskData);
+    try {
+      if (!VALID_STATUSES.includes(columnId)) {
+        setError(`Invalid status: ${columnId}. Task cannot be created.`);
+        return;
+      }
+      
+      const taskData = {
+        title,
+        description: "",
+        status: columnId,
+        priority: "medium" as TaskPriority,
+        dueDate: null,
+        userId: localStorage.getItem("userId") || "",
+      };
+      await handleCreateTask(taskData);
+    } catch (err) {
+      setError("Failed to create task. Please try again.");
+      console.error("Error in handleQuickAddTask:", err);
+    }
   };
 
+  // Removed handleAddList as we only want to support the predefined columns
   const handleAddList = (title: string) => {
-    setBoard((prev) => {
-      if (!prev) return prev;
-      const newBoard = { ...prev };
-      const newColumnId = `column-${Date.now()}` as TaskStatus;
-
-      newBoard.columns.push({
-        id: newColumnId,
-        title,
-        taskIds: [],
-      });
-
-      return newBoard;
-    });
+    console.warn("Adding new lists is not supported. Only predefined statuses (todo, inprogress, done) are allowed.");
   };
 
   const handleLogout = () => {

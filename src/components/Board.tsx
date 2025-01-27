@@ -15,7 +15,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { useDroppable } from "@dnd-kit/core";
-import { Board as BoardType, Task, TaskStatus } from "../types/interfaces";
+import { Board as BoardType, Task, TaskStatus, VALID_STATUSES } from "../types/interfaces";
 import TaskCard from "./TaskCard";
 
 interface BoardProps {
@@ -225,15 +225,21 @@ const Board: React.FC<BoardProps> = ({
                         }
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && newCardTitle[column.id]) {
-                            onAddTask(newCardTitle[column.id], column.id);
-                            setNewCardTitle({
-                              ...newCardTitle,
-                              [column.id]: "",
-                            });
-                            setShowNewCardInput({
-                              ...showNewCardInput,
-                              [column.id]: false,
-                            });
+                            // Ensure column.id is a valid TaskStatus
+                            const status = column.id as TaskStatus;
+                            if (VALID_STATUSES.includes(status)) {
+                              onAddTask(newCardTitle[column.id], status);
+                              setNewCardTitle({
+                                ...newCardTitle,
+                                [column.id]: "",
+                              });
+                              setShowNewCardInput({
+                                ...showNewCardInput,
+                                [column.id]: false,
+                              });
+                            } else {
+                              console.error(`Invalid status: ${status}`);
+                            }
                           }
                         }}
                         placeholder="Enter a title for this card..."
@@ -244,11 +250,17 @@ const Board: React.FC<BoardProps> = ({
                         <button
                           onClick={() => {
                             if (newCardTitle[column.id]) {
-                              onAddTask(newCardTitle[column.id], column.id);
-                              setNewCardTitle({
-                                ...newCardTitle,
-                                [column.id]: "",
-                              });
+                              // Ensure column.id is a valid TaskStatus
+                              const status = column.id as TaskStatus;
+                              if (VALID_STATUSES.includes(status)) {
+                                onAddTask(newCardTitle[column.id], status);
+                                setNewCardTitle({
+                                  ...newCardTitle,
+                                  [column.id]: "",
+                                });
+                              } else {
+                                console.error(`Invalid status: ${status}`);
+                              }
                             }
                             setShowNewCardInput({
                               ...showNewCardInput,
@@ -312,77 +324,7 @@ const Board: React.FC<BoardProps> = ({
               </div>
             );
           })}
-          <div className="flex-shrink-0 w-72">
-            {showNewListInput ? (
-              <div className="bg-white/10 backdrop-blur-lg rounded-xl shadow-lg p-2">
-                <input
-                  type="text"
-                  value={newListTitle}
-                  onChange={(e) => setNewListTitle(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && newListTitle) {
-                      onAddList(newListTitle);
-                      setNewListTitle("");
-                      setShowNewListInput(false);
-                    }
-                  }}
-                  placeholder="Enter list title..."
-                  className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/50 focus:outline-none focus:border-white/30"
-                  autoFocus
-                />
-                <div className="flex items-center gap-2 mt-2">
-                  <button
-                    onClick={() => {
-                      if (newListTitle) {
-                        onAddList(newListTitle);
-                        setNewListTitle("");
-                      }
-                      setShowNewListInput(false);
-                    }}
-                    className="bg-white/20 hover:bg-white/30 text-white text-sm px-3 py-1.5 rounded-lg transition-colors"
-                  >
-                    Add list
-                  </button>
-                  <button
-                    onClick={() => setShowNewListInput(false)}
-                    className="text-white/60 hover:text-white/80 transition-colors"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <button
-                onClick={() => setShowNewListInput(true)}
-                className="w-full h-10 flex items-center gap-1 text-white/60 hover:text-white/80 px-4 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-lg transition-colors"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                Add another list
-              </button>
-            )}
-          </div>
+          {/* Removed "Add another list" section since we only support predefined columns */}
         </div>
         <DragOverlay dropAnimation={null}>
           {activeTask ? (

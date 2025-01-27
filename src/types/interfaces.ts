@@ -2,6 +2,9 @@
 export type TaskStatus = "todo" | "inprogress" | "done";
 export type TaskPriority = "low" | "medium" | "high";
 
+// Valid status values
+export const VALID_STATUSES: TaskStatus[] = ["todo", "inprogress", "done"];
+
 export interface Task {
   id: string;
   title: string;
