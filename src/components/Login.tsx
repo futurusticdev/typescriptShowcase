@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { LoginCredentials, AuthResponse, ApiError } from "../types/interfaces";
-import axios from "axios";
+import { LoginCredentials, ApiError } from "../types/interfaces";
+import { login } from "../services/api";
 
 interface LoginProps {
   onLogin: (token: string) => void;
@@ -16,11 +16,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post<AuthResponse>(
-        `${import.meta.env.VITE_API_URL}/api/login`,
-        credentials
-      );
-      onLogin(response.data.token);
+      const response = await login(credentials);
+      onLogin(response.token);
     } catch (err: any) {
       const apiError = err.response?.data as ApiError;
       setError(apiError?.error || "An error occurred");

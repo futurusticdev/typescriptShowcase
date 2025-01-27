@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import axios from "axios";
 import {
   RegisterCredentials,
-  AuthResponse,
   ApiError,
 } from "../types/interfaces";
+import { register } from "../services/api";
 
 interface RegisterProps {
   onRegister: (token: string) => void;
@@ -27,14 +26,8 @@ const Register: React.FC<RegisterProps> = ({ onRegister }) => {
     }
 
     try {
-      const response = await axios.post<AuthResponse>(
-        `${import.meta.env.VITE_API_URL}/api/register`,
-        {
-          email: credentials.email,
-          password: credentials.password,
-        }
-      );
-      onRegister(response.data.token);
+      const response = await register(credentials);
+      onRegister(response.token);
     } catch (err: any) {
       const apiError = err.response?.data as ApiError;
       setError(apiError?.error || "An error occurred");

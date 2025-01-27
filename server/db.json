@@ -5,6 +5,24 @@
       "title": "Example Task",
       "description": "This is an example task",
       "status": "todo"
+    },
+    {
+      "title": "todo",
+      "description": "",
+      "status": "asdasd",
+      "priority": "medium",
+      "dueDate": null,
+      "userId": "1738007618027",
+      "createdAt": "2025-01-27T19:53:43.641Z",
+      "updatedAt": "2025-01-27T19:53:43.641Z",
+      "id": "1738007623648"
+    }
+  ],
+  "users": [
+    {
+      "id": "1738007618027",
+      "email": "firehaming@gmail.com",
+      "password": "$2a$10$XffO2ube/XfP8ksMdoxWue3apnFAZWEguMkrFvrlDPhVKVbGpW7xi"
     }
   ]
 }

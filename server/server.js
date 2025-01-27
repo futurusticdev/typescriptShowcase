@@ -53,6 +53,32 @@ saveDb(db);
 console.log("Database initialized successfully");
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+const ACCESS_TOKEN_EXPIRY = 15 * 60; // 15 minutes
+const REFRESH_TOKEN_EXPIRY = 7 * 24 * 60 * 60; // 7 days
+
+const generateTokens = (userId) => {
+  const accessToken = jwt.sign(
+    {
+      userId,
+      type: 'access',
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + ACCESS_TOKEN_EXPIRY
+    },
+    JWT_SECRET
+  );
+
+  const refreshToken = jwt.sign(
+    {
+      userId,
+      type: 'refresh',
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + REFRESH_TOKEN_EXPIRY
+    },
+    JWT_SECRET
+  );
+
+  return { accessToken, refreshToken };
+};
 
 // Create JSON Server router
 const router = jsonServer.router(dbPath);
@@ -80,10 +106,24 @@ const authenticateToken = (req, res, next) => {
   if (!token) return res.status(401).json({ error: "Access denied" });
 
   try {
+    console.log('Verifying token:', token);
     const verified = jwt.verify(token, JWT_SECRET);
-    req.user = verified;
+    console.log('Verified token payload:', verified);
+    
+    // Verify token type
+    if (verified.type !== 'access') {
+      throw new Error('Invalid token type');
+    }
+    
+    // Ensure consistent user object structure
+    req.user = {
+      id: verified.userId,
+      type: verified.type
+    };
+    console.log('Set user object:', req.user);
     next();
   } catch (err) {
+    console.error('Token verification failed:', err.message);
     res.status(400).json({ error: "Invalid token" });
   }
 };
@@ -114,9 +154,10 @@ app.post("/api/register", async (req, res) => {
     db.users.push(user);
     saveDb(db);
 
-    // Create token
-    const token = jwt.sign({ id: user.id }, JWT_SECRET);
-    res.json({ token });
+    // Generate tokens
+    const { accessToken, refreshToken } = generateTokens(user.id);
+    console.log('Created token payload:', { userId: user.id, type: 'access' });
+    res.json({ token: accessToken, refreshToken });
   } catch (error) {
     console.error("Registration error:", error);
     res.status(500).json({ error: "Server error during registration" });
@@ -137,12 +178,37 @@ app.post("/api/login", async (req, res) => {
     if (!validPassword)
       return res.status(400).json({ error: "Invalid password" });
 
-    // Create token
-    const token = jwt.sign({ id: user.id }, JWT_SECRET);
-    res.json({ token });
+    // Generate tokens
+    const { accessToken, refreshToken } = generateTokens(user.id);
+    console.log('Created token payload:', { userId: user.id, type: 'access' });
+    res.json({ token: accessToken, refreshToken });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ error: "Server error during login" });
+  }
+});
+
+// Token refresh endpoint
+app.post("/api/refresh", async (req, res) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res.status(400).json({ error: "Refresh token required" });
+  }
+
+  try {
+    const verified = jwt.verify(refreshToken, JWT_SECRET);
+    
+    if (verified.type !== 'refresh') {
+      throw new Error('Invalid token type');
+    }
+
+    // Generate new tokens
+    const { accessToken, refreshToken: newRefreshToken } = generateTokens(verified.userId);
+    res.json({ token: accessToken, refreshToken: newRefreshToken });
+  } catch (error) {
+    console.error("Token refresh error:", error);
+    res.status(401).json({ error: "Invalid refresh token" });
   }
 });
 
@@ -211,8 +277,8 @@ app.delete("/api/tasks/:id", authenticateToken, (req, res) => {
   }
 });
 
-// Health check endpoint
-app.get("/health", (req, res) => {
+// Health check endpoint under API
+router.get("/health", (req, res) => {
   res.json({ status: "UP" });
 });
 

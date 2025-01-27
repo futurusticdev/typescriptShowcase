@@ -34,12 +34,22 @@ export interface LoginCredentials {
   password: string;
 }
 
-export interface RegisterCredentials extends LoginCredentials {
+// Server registration payload
+export interface RegisterPayload extends LoginCredentials {}
+
+// Client-side registration form data
+export interface RegisterCredentials extends RegisterPayload {
   confirmPassword: string;
 }
 
 export interface AuthResponse {
   token: string;
+  refreshToken: string;
+}
+
+export interface RefreshResponse {
+  token: string;
+  refreshToken: string;
 }
 
 // API Error type
