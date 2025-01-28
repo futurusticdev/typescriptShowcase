@@ -125,7 +125,11 @@ const authenticateToken = (req, res, next) => {
     next();
   } catch (err) {
     console.error('Token verification failed:', err.message);
-    res.status(400).json({ error: "Invalid token" });
+    const isExpired = err.name === 'TokenExpiredError';
+    res.status(isExpired ? 401 : 400).json({
+      error: isExpired ? "Token expired" : "Invalid token",
+      code: isExpired ? 'TOKEN_EXPIRED' : 'INVALID_TOKEN'
+    });
   }
 };
 

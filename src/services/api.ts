@@ -69,13 +69,22 @@ axiosInstance.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config!;
     
-    // Log error details in development
-    if (isDevelopment) {
-      console.error('API Error:', {
-        status: error.response?.status,
-        data: error.response?.data,
-        url: originalRequest.url,
-        method: originalRequest.method
+    // Enhanced error logging
+    console.error('API Error:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      url: originalRequest.url,
+      method: originalRequest.method,
+      errorCode: error.response?.data?.code,
+      timestamp: new Date().toISOString()
+    });
+
+    // Always log critical errors, even in production
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      console.warn('Authentication error:', {
+        tokenPresent: !!localStorage.getItem("accessToken"),
+        errorDetails: error.response?.data
       });
     }
 
@@ -97,8 +106,10 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
 
       try {
+        console.log('Token refresh attempt started');
         const refreshToken = localStorage.getItem("refreshToken");
         if (!refreshToken) {
+          console.error('No refresh token found in localStorage');
           throw new Error("No refresh token available");
         }
 
@@ -108,6 +119,7 @@ axiosInstance.interceptors.response.use(
         );
 
         const { accessToken, refreshToken: newRefreshToken } = response.data;
+        console.log('Token refresh successful, updating storage');
         localStorage.setItem("accessToken", accessToken);
         localStorage.setItem("refreshToken", newRefreshToken);
 
@@ -115,13 +127,22 @@ axiosInstance.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         
         processQueue(null, accessToken);
+        console.log('Retrying original request with new token');
         return axiosInstance(originalRequest);
-      } catch (refreshError) {
+      } catch (refreshError: any) {
+        console.error('Token refresh failed:', refreshError?.response?.data || refreshError.message);
         processQueue(refreshError, null);
-        // Clear tokens on refresh failure
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        window.location.href = "/login";
+        
+        // Handle specific error cases
+        if (refreshError?.response?.status === 401) {
+          console.log('Refresh token invalid/expired, redirecting to login');
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+          window.location.href = "/login";
+        } else {
+          console.error('Unexpected error during token refresh:', refreshError);
+        }
+        
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
