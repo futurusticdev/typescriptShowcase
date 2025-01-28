@@ -69,12 +69,16 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         <div className="flex flex-col gap-2">
           <div>
             {/* Task Title */}
-            <h4 className="text-sm font-medium text-white group-hover:text-white/90">
+            <h4 className={`text-sm font-medium text-white group-hover:text-white/90 ${
+              task.completed ? 'line-through text-white/50' : ''
+            }`}>
               {task.title}
             </h4>
             {/* Optional Task Description */}
             {task.description && (
-              <p className="text-xs text-white/60 group-hover:text-white/70">
+              <p className={`text-xs text-white/60 group-hover:text-white/70 ${
+                task.completed ? 'line-through text-white/40' : ''
+              }`}>
                 {task.description}
               </p>
             )}
