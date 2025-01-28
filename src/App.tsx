@@ -129,8 +129,78 @@ function App() {
     } catch (err) {
       setError("Failed to move task. Please try again.");
       // Revert the changes by refetching the board
-      const tasks = await getTasks();
-      setBoard(createInitialBoard(tasks));
+      fetchTasks();
+    }
+  };
+
+  const handleCreateTask = async (
+    taskData: Omit<Task, "id" | "createdAt" | "updatedAt">
+  ) => {
+    try {
+      // Ensure task has a valid status
+      const taskWithStatus = {
+        ...taskData,
+        status: taskData.status || "todo" as TaskStatus
+      };
+      
+      // Wait for the server response before updating UI
+      const newTask = await createTask(taskWithStatus);
+      
+      // Only update the board after we have the server-generated task ID
+      setBoard((prev) => {
+        if (!prev) return prev;
+        
+        // Create a new board reference
+        const newBoard = {
+          ...prev,
+          tasks: {
+            ...prev.tasks,
+            [newTask.id]: newTask
+          },
+          columns: prev.columns.map(col => 
+            col.id === newTask.status
+              ? {
+                  ...col,
+                  taskIds: [...col.taskIds, newTask.id]
+                }
+              : col
+          )
+        };
+
+        return newBoard;
+      });
+
+      // Close the new task form if it was used
+      setIsNewTaskFormOpen(false);
+      
+    } catch (err) {
+      setError("Failed to create task. Please try again.");
+      console.error("Error creating task:", err);
+    }
+  };
+
+  const handleQuickAddTask = async (columnId: TaskStatus, title: string) => {
+    try {
+      if (!VALID_STATUSES.includes(columnId)) {
+        setError(`Invalid status: ${columnId}. Task cannot be created.`);
+        return;
+      }
+      
+      const taskData = {
+        title,
+        description: "",
+        status: columnId,
+        priority: "medium" as TaskPriority,
+        dueDate: null,
+        userId: localStorage.getItem("userId") || "",
+      };
+
+      // Use the same handleCreateTask to ensure consistent behavior
+      await handleCreateTask(taskData);
+      
+    } catch (err) {
+      setError("Failed to create task. Please try again.");
+      console.error("Error in handleQuickAddTask:", err);
     }
   };
 
@@ -156,62 +226,6 @@ function App() {
       setError('Failed to delete task');
       // Revert optimistic update
       fetchTasks();
-    }
-  };
-
-  const handleCreateTask = async (
-    taskData: Omit<Task, "id" | "createdAt" | "updatedAt">
-  ) => {
-    try {
-      // Ensure task has a valid status
-      const taskWithStatus = {
-        ...taskData,
-        status: taskData.status || "todo" as TaskStatus
-      };
-      const newTask = await createTask(taskWithStatus);
-      setBoard((prev) => {
-        if (!prev) return prev;
-        const newBoard = { ...prev };
-
-        // Add task to tasks object
-        newBoard.tasks[newTask.id] = newTask;
-
-        // Add task to appropriate column
-        const columnIndex = newBoard.columns.findIndex(
-          (col) => col.id === newTask.status
-        );
-        if (columnIndex !== -1) {
-          newBoard.columns[columnIndex].taskIds.push(newTask.id);
-        } else {
-          console.error(`Column with status ${newTask.status} not found`);
-        }
-
-        return newBoard;
-      });
-    } catch (err) {
-      setError("Failed to create task. Please try again.");
-    }
-  };
-
-  const handleQuickAddTask = async (columnId: TaskStatus, title: string) => {
-    try {
-      if (!VALID_STATUSES.includes(columnId)) {
-        setError(`Invalid status: ${columnId}. Task cannot be created.`);
-        return;
-      }
-      
-      const taskData = {
-        title,
-        description: "",
-        status: columnId,
-        priority: "medium" as TaskPriority,
-        dueDate: null,
-        userId: localStorage.getItem("userId") || "",
-      };
-      await handleCreateTask(taskData);
-    } catch (err) {
-      setError("Failed to create task. Please try again.");
-      console.error("Error in handleQuickAddTask:", err);
     }
   };
 
