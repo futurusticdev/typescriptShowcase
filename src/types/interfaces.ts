@@ -19,6 +19,7 @@ export interface Task {
   createdAt: Date | string;
   updatedAt: Date | string;
   userId: string;
+  completed?: boolean;
 }
 
 // Board related types

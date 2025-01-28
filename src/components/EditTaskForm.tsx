@@ -8,37 +8,36 @@ interface EditTaskFormProps {
   onSubmit: (taskId: string, updatedTask: Partial<Task>) => Promise<void>;
 }
 
-const EditTaskForm: React.FC<EditTaskFormProps> = ({
+export const EditTaskForm: React.FC<EditTaskFormProps> = ({
   task,
   open,
   onClose,
   onSubmit,
 }) => {
-  const [title, setTitle] = useState(task.title);
-  const [description, setDescription] = useState(task.description);
-  const [priority, setPriority] = useState<TaskPriority>(task.priority);
-  const [dueDate, setDueDate] = useState<string>(
-    task.dueDate ? new Date(task.dueDate).toISOString().split("T")[0] : ""
-  );
+  const [editedTask, setEditedTask] = useState<Partial<Task>>({
+    title: task.title,
+    description: task.description,
+    priority: task.priority,
+    dueDate: task.dueDate || "",
+    completed: task.completed || false,
+  });
 
   useEffect(() => {
     if (open) {
-      setTitle(task.title);
-      setDescription(task.description);
-      setPriority(task.priority);
-      setDueDate(task.dueDate ? new Date(task.dueDate).toISOString().split("T")[0] : "");
+      setEditedTask({
+        title: task.title,
+        description: task.description,
+        priority: task.priority,
+        dueDate: task.dueDate || "",
+        completed: task.completed || false,
+      });
     }
   }, [open, task]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await onSubmit(task.id, {
-        title,
-        description,
-        priority,
-        dueDate: dueDate ? new Date(dueDate).toISOString() : null,
-      });
+      await onSubmit(task.id, editedTask);
       onClose();
     } catch (error) {
       console.error("Failed to update task:", error);
@@ -49,78 +48,96 @@ const EditTaskForm: React.FC<EditTaskFormProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-        <h2 className="text-xl font-semibold mb-4">Edit Task</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="w-full max-w-md bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-8 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-pink-400/10 via-purple-400/10 to-indigo-500/10 pointer-events-none" />
+
+        <h2 className="text-2xl font-bold text-white text-center mb-6">
+          Edit Task
+        </h2>
+
+        <form onSubmit={handleSubmit} className="space-y-4 relative">
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-              Title
-            </label>
             <input
               type="text"
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Task Title"
+              value={editedTask.title}
+              onChange={(e) => setEditedTask({ ...editedTask, title: e.target.value })}
+              className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-white/50 focus:outline-none focus:border-white/30 transition-colors"
               required
+              autoFocus
             />
           </div>
 
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-              Description
-            </label>
             <textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Description"
+              value={editedTask.description}
+              onChange={(e) =>
+                setEditedTask({ ...editedTask, description: e.target.value })
+              }
+              className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-white/50 focus:outline-none focus:border-white/30 transition-colors min-h-[100px] resize-none"
             />
           </div>
 
-          <div>
-            <label htmlFor="priority" className="block text-sm font-medium text-gray-700">
-              Priority
-            </label>
-            <select
-              id="priority"
-              value={priority}
-              onChange={(e) => setPriority(e.target.value as TaskPriority)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </select>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <select
+                value={editedTask.priority}
+                onChange={(e) =>
+                  setEditedTask({ ...editedTask, priority: e.target.value as TaskPriority })
+                }
+                className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-white/30 transition-colors"
+              >
+                <option value="low" className="bg-gray-800">
+                  Low
+                </option>
+                <option value="medium" className="bg-gray-800">
+                  Medium
+                </option>
+                <option value="high" className="bg-gray-800">
+                  High
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <input
+                type="date"
+                value={editedTask.dueDate}
+                onChange={(e) => setEditedTask({ ...editedTask, dueDate: e.target.value })}
+                className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-white/30 transition-colors"
+              />
+            </div>
           </div>
 
-          <div>
-            <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700">
-              Due Date
-            </label>
+          <div className="flex items-center space-x-2 text-white">
             <input
-              type="date"
-              id="dueDate"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              type="checkbox"
+              id="completed"
+              checked={editedTask.completed}
+              onChange={(e) =>
+                setEditedTask({ ...editedTask, completed: e.target.checked })
+              }
+              className="w-4 h-4 rounded border-white/20 bg-white/10 text-blue-600 focus:ring-blue-500"
             />
+            <label htmlFor="completed" className="text-sm font-medium">
+              Mark as completed
+            </label>
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4">
+          <div className="flex gap-3 pt-2">
+            <button
+              type="submit"
+              className="flex-1 bg-white/20 hover:bg-white/30 text-white rounded-xl py-2.5 font-medium transition-colors"
+            >
+              Save Changes
+            </button>
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="flex-1 bg-white/10 hover:bg-white/20 text-white rounded-xl py-2.5 font-medium transition-colors"
             >
               Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Save Changes
             </button>
           </div>
         </form>
@@ -128,5 +145,3 @@ const EditTaskForm: React.FC<EditTaskFormProps> = ({
     </div>
   );
 };
-
-export default EditTaskForm;
