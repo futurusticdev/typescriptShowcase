@@ -1,7 +1,8 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Board as BoardType, Task, TaskStatus, Column } from "../types/interfaces";
 import { TaskCard } from "./TaskCard";
 import { NewColumnButton } from "./NewColumnButton";
+import { getColumns, createColumn, updateColumn, deleteColumn } from "../services/api";
 
 /**
  * Props for the Board component

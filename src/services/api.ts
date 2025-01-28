@@ -253,3 +253,52 @@ export const deleteTask = async (taskId: string): Promise<void> => {
   const response = await axiosInstance.delete(`/api/tasks/${taskId}`);
   return response.data;
 };
+
+/**
+ * Retrieves all columns for the authenticated user
+ * @returns {Promise<Column[]>} Array of user's columns
+ * @throws {AxiosError} When request fails or user is not authenticated
+ */
+export const getColumns = async (): Promise<Column[]> => {
+  const response = await axiosInstance.get<Column[]>("/api/columns");
+  return response.data;
+};
+
+/**
+ * Creates a new column
+ * @param {Omit<Column, "id">} column - Column data without system-managed fields
+ * @returns {Promise<Column>} Created column with generated ID
+ * @throws {AxiosError} When column creation fails or user is not authenticated
+ */
+export const createColumn = async (
+  column: Omit<Column, "id">
+): Promise<Column> => {
+  const response = await axiosInstance.post<Column>("/api/columns", column);
+  return response.data;
+};
+
+/**
+ * Updates an existing column
+ * @param {string} columnId - ID of the column to update
+ * @param {Partial<Column>} column - Partial column data to update
+ * @returns {Promise<Column>} Updated column
+ * @throws {AxiosError} When update fails or user is not authenticated
+ */
+export const updateColumn = async (
+  columnId: string,
+  column: Partial<Column>
+): Promise<Column> => {
+  const response = await axiosInstance.put<Column>(`/api/columns/${columnId}`, column);
+  return response.data;
+};
+
+/**
+ * Deletes a column
+ * @param {string} columnId - ID of the column to delete
+ * @returns {Promise<void>}
+ * @throws {AxiosError} When deletion fails or user is not authenticated
+ */
+export const deleteColumn = async (columnId: string): Promise<void> => {
+  const response = await axiosInstance.delete(`/api/columns/${columnId}`);
+  return response.data;
+};

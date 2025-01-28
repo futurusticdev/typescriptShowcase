@@ -322,6 +322,70 @@ app.delete("/api/tasks/:id", authenticateToken, (req, res) => {
   }
 });
 
+app.get("/api/columns", authenticateToken, (req, res) => {
+  try {
+    const db = getDb();
+    const userColumns = db.columns.filter((column) => column.userId === req.user.id);
+    res.json(userColumns);
+  } catch (error) {
+    console.error("Error fetching columns:", error);
+    res.status(500).json({ error: "Server error while fetching columns" });
+  }
+});
+
+app.post("/api/columns", authenticateToken, (req, res) => {
+  try {
+    const db = getDb();
+    const column = {
+      ...req.body,
+      id: Date.now().toString(),
+      userId: req.user.id,
+    };
+    db.columns.push(column);
+    saveDb(db);
+    res.json(column);
+  } catch (error) {
+    console.error("Error creating column:", error);
+    res.status(500).json({ error: "Server error while creating column" });
+  }
+});
+
+app.put("/api/columns/:id", authenticateToken, (req, res) => {
+  try {
+    const db = getDb();
+    const columnIndex = db.columns.findIndex(
+      (c) => c.id === req.params.id && c.userId === req.user.id
+    );
+    if (columnIndex === -1)
+      return res.status(404).json({ error: "Column not found" });
+
+    db.columns[columnIndex] = { ...db.columns[columnIndex], ...req.body };
+    saveDb(db);
+    res.json(db.columns[columnIndex]);
+  } catch (error) {
+    console.error("Error updating column:", error);
+    res.status(500).json({ error: "Server error while updating column" });
+  }
+});
+
+app.delete("/api/columns/:id", authenticateToken, (req, res) => {
+  try {
+    const db = getDb();
+    const columnIndex = db.columns.findIndex(
+      (c) => c.id === req.params.id && c.userId === req.user.id
+    );
+    if (columnIndex === -1)
+      return res.status(404).json({ error: "Column not found" });
+
+    db.columns.splice(columnIndex, 1);
+    saveDb(db);
+    res.json({ message: "Column deleted" });
+  } catch (error) {
+    console.error("Error deleting column:", error);
+    res.status(500).json({ error: "Server error while deleting column" });
+  }
+});
+
 // Health check endpoint under API
 router.get("/health", (req, res) => {
   res.json({ status: "UP" });
