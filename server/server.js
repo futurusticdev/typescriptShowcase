@@ -55,8 +55,8 @@ saveDb(db);
 console.log("Database initialized successfully");
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
-const ACCESS_TOKEN_EXPIRY = 15 * 60; // 15 minutes
-const REFRESH_TOKEN_EXPIRY = 7 * 24 * 60 * 60; // 7 days
+const ACCESS_TOKEN_EXPIRY = 24 * 60 * 60; // 24 hours
+const REFRESH_TOKEN_EXPIRY = 30 * 24 * 60 * 60; // 30 days
 
 const generateTokens = (userId) => {
   const accessToken = jwt.sign(
