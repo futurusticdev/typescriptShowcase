@@ -102,14 +102,9 @@ axiosInstance.interceptors.response.use(
           throw new Error("No refresh token available");
         }
 
-        const response = await axios.post<RefreshResponse>(
-          `${API_URL}/api/refresh`,
-          { refreshToken },
-          {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }
+        const response = await axiosInstance.post<RefreshResponse>(
+          "/api/refresh",
+          { refreshToken }
         );
 
         const { accessToken, refreshToken: newRefreshToken } = response.data;
@@ -120,7 +115,7 @@ axiosInstance.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         
         processQueue(null, accessToken);
-        return axios(originalRequest);
+        return axiosInstance(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
         // Clear tokens on refresh failure
@@ -138,7 +133,7 @@ axiosInstance.interceptors.response.use(
       failedQueue.push({
         resolve: (token: string) => {
           originalRequest.headers.Authorization = `Bearer ${token}`;
-          resolve(axios(originalRequest));
+          resolve(axiosInstance(originalRequest));
         },
         reject: (err: any) => {
           reject(err);
