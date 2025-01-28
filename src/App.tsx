@@ -217,22 +217,27 @@ function App() {
     }
   };
 
-  const handleAddList = (title: string) => {
-    setBoard((prev) => {
-      if (!prev) return prev;
-      
-      const newColumnId = `custom-${Date.now()}` as TaskStatus;
-      const newColumn = {
-        id: newColumnId,
+  const handleAddList = async (title: string) => {
+    try {
+      const columnData = {
         title,
-        taskIds: [],
+        taskIds: []
       };
-
-      return {
-        ...prev,
-        columns: [...prev.columns, newColumn],
-      };
-    });
+      
+      const newColumn = await createColumn(columnData);
+      
+      setBoard((prev) => {
+        if (!prev) return prev;
+        
+        return {
+          ...prev,
+          columns: [...prev.columns, newColumn],
+        };
+      });
+    } catch (error) {
+      setError("Failed to create new column. Please try again.");
+      console.error("Error creating column:", error);
+    }
   };
 
   const handleLogout = () => {

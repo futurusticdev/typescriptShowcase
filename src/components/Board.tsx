@@ -2,7 +2,6 @@ import React, { useState, useCallback, useEffect } from "react";
 import { Board as BoardType, Task, TaskStatus, Column } from "../types/interfaces";
 import { TaskCard } from "./TaskCard";
 import { NewColumnButton } from "./NewColumnButton";
-import { getColumns, createColumn, updateColumn, deleteColumn } from "../services/api";
 
 /**
  * Props for the Board component
@@ -17,7 +16,7 @@ interface BoardProps {
   board: BoardType;
   onTaskMove: (taskId: string, source: string, destination: string) => void;
   onAddTask: (title: string, columnId: TaskStatus) => Promise<void>;
-  onAddList: (title: string) => void;
+  onAddList: (title: string) => Promise<void>;
   onDelete: (taskId: string) => Promise<void>;
 }
 
