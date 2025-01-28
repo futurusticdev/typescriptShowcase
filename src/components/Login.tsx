@@ -17,8 +17,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     e.preventDefault();
     try {
       const response = await login(credentials);
-      onLogin(response.token);
+      // Update to use accessToken instead of token
+      onLogin(response.accessToken);
     } catch (err: any) {
+      console.error('Login error:', err.response?.data);
       const apiError = err.response?.data as ApiError;
       setError(apiError?.error || "An error occurred");
     }

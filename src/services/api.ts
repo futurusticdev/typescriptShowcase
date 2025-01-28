@@ -39,7 +39,7 @@ const processQueue = (error: any, token: string | null = null) => {
 
 // Add authentication token to all requests
 axiosInstance.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("accessToken");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -81,19 +81,19 @@ axiosInstance.interceptors.response.use(
           { refreshToken }
         );
 
-        const { token, refreshToken: newRefreshToken } = response.data;
-        localStorage.setItem("token", token);
+        const { accessToken, refreshToken: newRefreshToken } = response.data;
+        localStorage.setItem("accessToken", accessToken);
         localStorage.setItem("refreshToken", newRefreshToken);
 
         // Update the failed request with new token
-        originalRequest.headers.Authorization = `Bearer ${token}`;
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         
-        processQueue(null, token);
+        processQueue(null, accessToken);
         return axios(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
         // Clear tokens on refresh failure
-        localStorage.removeItem("token");
+        localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
         window.location.href = "/login";
         return Promise.reject(refreshError);
@@ -125,8 +125,8 @@ axiosInstance.interceptors.response.use(
  */
 export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
   const response = await axiosInstance.post<AuthResponse>("/api/login", credentials);
-  const { token, refreshToken } = response.data;
-  localStorage.setItem("token", token);
+  const { accessToken, refreshToken } = response.data;
+  localStorage.setItem("accessToken", accessToken);
   localStorage.setItem("refreshToken", refreshToken);
   return response.data;
 };
@@ -140,8 +140,8 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
 export const register = async (credentials: RegisterCredentials): Promise<AuthResponse> => {
   const { confirmPassword, ...registerPayload } = credentials;
   const response = await axiosInstance.post<AuthResponse>("/api/register", registerPayload);
-  const { token, refreshToken } = response.data;
-  localStorage.setItem("token", token);
+  const { accessToken, refreshToken } = response.data;
+  localStorage.setItem("accessToken", accessToken);
   localStorage.setItem("refreshToken", refreshToken);
   return response.data;
 };
@@ -150,7 +150,7 @@ export const register = async (credentials: RegisterCredentials): Promise<AuthRe
  * Logs out the current user by removing authentication tokens
  */
 export const logout = () => {
-  localStorage.removeItem("token");
+  localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
 };
 

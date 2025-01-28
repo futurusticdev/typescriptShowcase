@@ -27,8 +27,10 @@ const Register: React.FC<RegisterProps> = ({ onRegister }) => {
 
     try {
       const response = await register(credentials);
-      onRegister(response.token);
+      // Update to use accessToken instead of token
+      onRegister(response.accessToken);
     } catch (err: any) {
+      console.error('Registration error:', err.response?.data);
       const apiError = err.response?.data as ApiError;
       setError(apiError?.error || "An error occurred");
     }
