@@ -1,50 +1,169 @@
-# React + TypeScript + Vite
+# 🚀 Modern TypeScript Task Management Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.2.2-blue.svg)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-18.2.0-61dafb.svg)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-4.5.2-646CFF.svg)](https://vitejs.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4.1-06B6D4.svg)](https://tailwindcss.com/)
 
-Currently, two official plugins are available:
+A sophisticated task management application showcasing modern TypeScript development practices and enterprise-level architecture. This project demonstrates expertise in full-stack TypeScript development, modern state management, and responsive design patterns.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🎯 Technical Highlights
 
-## Expanding the ESLint configuration
+### Frontend Architecture
+- **TypeScript Excellence**
+  - Strict type checking with custom utility types
+  - Type-safe API integration with Axios
+  - Comprehensive type definitions for state management
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+- **Modern React Patterns**
+  - Functional components with custom hooks
+  - Context API for theme management
+  - Optimized rendering with proper React.memo usage
 
-- Configure the top-level `parserOptions` property like this:
+- **Advanced UI Features**
+  - Drag-and-drop functionality using @dnd-kit
+  - Responsive design with Tailwind CSS
+  - Material UI integration for enhanced components
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+### Backend Implementation
+- **Secure Authentication**
+  - JWT-based authentication flow
+  - Bcrypt password hashing
+  - Protected API routes
+
+- **API Design**
+  - RESTful endpoints with Express
+  - CORS configuration for security
+  - JSON Server for rapid prototyping
+
+## 🛠️ Technology Stack
+
+### Core Technologies
+- TypeScript 5.2.2
+- React 18.2.0
+- Vite 4.5.2
+- Node.js 18.x
+
+### Frontend
+- Tailwind CSS 3.4.1
+- @dnd-kit for drag-and-drop
+- Material UI components
+- Axios for API calls
+
+### Backend
+- Express.js
+- JSON Server
+- JWT for authentication
+- CORS for security
+
+### Development & Testing
+- Vitest for unit testing
+- ESLint for code quality
+- Concurrent development servers
+- Type checking with `tsc`
+
+## 🚀 Getting Started
+
+1. **Clone and Install**
+```bash
+git clone <repository-url>
+cd typescript-task-manager
+npm install
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+2. **Development**
+```bash
+# Run both frontend and backend
+npm run dev
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+# Run frontend only
+npm run dev:frontend
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+# Run backend only
+npm run dev:backend
 ```
+
+3. **Testing**
+```bash
+# Run tests
+npm test
+
+# Watch mode
+npm run test:watch
+
+# Type checking
+npm run test:types
+```
+
+4. **Production**
+```bash
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+```
+
+## 🏗️ Project Structure
+
+```
+src/
+├── components/          # Reusable UI components
+├── contexts/           # React Context providers
+├── services/           # API and external services
+├── types/              # TypeScript interfaces and types
+├── hooks/              # Custom React hooks
+└── assets/             # Static assets
+
+server/                 # Backend implementation
+├── server.js          # Express server setup
+└── db.json            # JSON Server database
+```
+
+## 💡 Key Features
+
+- **Task Management**
+  - Create, edit, and delete tasks
+  - Drag-and-drop task organization
+  - Real-time updates
+
+- **User Experience**
+  - Responsive design for all devices
+  - Dark/light theme support
+  - Smooth animations and transitions
+
+- **Authentication**
+  - Secure user registration
+  - JWT-based authentication
+  - Protected routes
+
+## 🔒 Security Features
+
+- CORS configuration
+- Password hashing with bcrypt
+- JWT token validation
+- Protected API endpoints
+- Type-safe data handling
+
+## 🧪 Testing Strategy
+
+- Unit tests with Vitest
+- Type testing with TypeScript
+- Component testing best practices
+- API endpoint testing
+
+## 📦 Deployment
+
+The application is configured for deployment on Heroku with:
+- Automatic builds via `heroku-postbuild`
+- Environment variable management
+- Production optimization
+- Node.js and NPM version specifications
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
