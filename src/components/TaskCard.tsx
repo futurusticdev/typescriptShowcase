@@ -67,52 +67,17 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         }}
       >
         <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            {/* Completion Checkbox */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit?.(task.id, { completed: !task.completed });
-              }}
-              className="flex-shrink-0"
-            >
-              <div className={`w-4 h-4 rounded border ${
-                task.completed
-                  ? 'bg-blue-500 border-blue-500'
-                  : 'border-white/20 hover:border-white/40'
-              } transition-colors`}>
-                {task.completed && (
-                  <svg
-                    className="w-full h-full text-white"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                )}
-              </div>
-            </button>
-            
-            <div className="flex-1">
-              {/* Task Title */}
-              <h4 className={`text-sm font-medium text-white group-hover:text-white/90 ${
-                task.completed ? 'line-through text-white/50' : ''
-              }`}>
-                {task.title}
-              </h4>
-              {/* Optional Task Description */}
-              {task.description && (
-                <p className={`text-xs text-white/60 group-hover:text-white/70 ${
-                  task.completed ? 'line-through text-white/40' : ''
-                }`}>
-                  {task.description}
-                </p>
-              )}
-            </div>
+          <div>
+            {/* Task Title */}
+            <h4 className="text-sm font-medium text-white group-hover:text-white/90">
+              {task.title}
+            </h4>
+            {/* Optional Task Description */}
+            {task.description && (
+              <p className="text-xs text-white/60 group-hover:text-white/70">
+                {task.description}
+              </p>
+            )}
           </div>
           <div className="flex flex-col gap-2">
             {/* Priority and Due Date Row */}

@@ -38,8 +38,8 @@ const Register: React.FC<RegisterProps> = ({ onRegister }) => {
 
   return (
     <div className="w-screen h-screen bg-gradient-to-br from-pink-400 via-purple-400 to-indigo-500 flex items-center justify-center px-4 sm:px-6 lg:px-8">
-      <div className="w-full sm:max-w-md bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-8 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-white/10 pointer-events-none" />
+      <div className="w-full sm:max-w-md bg-white/20 backdrop-blur-lg rounded-3xl shadow-2xl p-8 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-white/10 pointer-events-none" />
         <div className="relative">
           <div className="flex justify-center mb-8">
             <div className="w-20 h-20 bg-white/20 backdrop-blur-lg rounded-full flex items-center justify-center">
@@ -80,7 +80,7 @@ const Register: React.FC<RegisterProps> = ({ onRegister }) => {
                   name="email"
                   type="email"
                   required
-                  className="block w-full pl-10 pr-3 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 backdrop-blur-lg focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent"
+                  className="block w-full pl-10 pr-3 py-3 bg-white/20 border border-white/30 rounded-xl text-white placeholder-white/70 backdrop-blur-lg focus:outline-none focus:ring-2 focus:ring-white/60 focus:border-transparent"
                   placeholder="Email"
                   value={credentials.email}
                   onChange={(e) =>
@@ -110,7 +110,7 @@ const Register: React.FC<RegisterProps> = ({ onRegister }) => {
                   name="password"
                   type="password"
                   required
-                  className="block w-full pl-10 pr-3 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 backdrop-blur-lg focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent"
+                  className="block w-full pl-10 pr-3 py-3 bg-white/20 border border-white/30 rounded-xl text-white placeholder-white/70 backdrop-blur-lg focus:outline-none focus:ring-2 focus:ring-white/60 focus:border-transparent"
                   placeholder="Password"
                   value={credentials.password}
                   onChange={(e) =>
@@ -140,7 +140,7 @@ const Register: React.FC<RegisterProps> = ({ onRegister }) => {
                   name="confirmPassword"
                   type="password"
                   required
-                  className="block w-full pl-10 pr-3 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 backdrop-blur-lg focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent"
+                  className="block w-full pl-10 pr-3 py-3 bg-white/20 border border-white/30 rounded-xl text-white placeholder-white/70 backdrop-blur-lg focus:outline-none focus:ring-2 focus:ring-white/60 focus:border-transparent"
                   placeholder="Confirm Password"
                   value={credentials.confirmPassword}
                   onChange={(e) =>
@@ -154,7 +154,7 @@ const Register: React.FC<RegisterProps> = ({ onRegister }) => {
             </div>
             <button
               type="submit"
-              className="w-full py-3 px-4 bg-white/20 hover:bg-white/30 text-white font-semibold rounded-xl backdrop-blur-lg transition-all duration-200 hover:shadow-lg"
+              className="w-full py-3 px-4 bg-white/30 hover:bg-white/40 text-white font-semibold rounded-xl shadow-lg backdrop-blur-lg transition-all duration-200 hover:shadow-xl"
             >
               CREATE ACCOUNT
             </button>
@@ -162,7 +162,7 @@ const Register: React.FC<RegisterProps> = ({ onRegister }) => {
           <div className="mt-6 text-center">
             <a
               href="#login"
-              className="text-white/80 hover:text-white transition-colors"
+              className="text-white/90 hover:text-white font-medium transition-colors underline decoration-white/30 hover:decoration-white/60"
             >
               Already have an account? Sign In
             </a>
