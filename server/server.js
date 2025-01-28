@@ -13,6 +13,7 @@ const dbPath = path.join(__dirname, "db.json");
 const initialDb = {
   users: [],
   tasks: [],
+  columns: []
 };
 
 // Read and parse the database file
@@ -28,6 +29,7 @@ const getDb = () => {
     // Ensure the database has the required structure
     if (!db.users) db.users = [];
     if (!db.tasks) db.tasks = [];
+    if (!db.columns) db.columns = [];
     return db;
   } catch (error) {
     console.error("Error reading database:", error);
