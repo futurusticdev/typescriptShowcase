@@ -62,33 +62,33 @@ axiosInstance.interceptors.request.use((config) => {
   return config;
 });
 
-/**
- * Response interceptor that handles token refresh
- * If a request fails with 400/401, it will:
- * 1. Queue the failed request
- * 2. Attempt to refresh the token
- * 3. Retry all queued requests with the new token
- */
+// Update the response interceptor with better error handling
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config!;
     
-    // Log error details
-    console.error('API Error:', {
-      status: error.response?.status,
-      data: error.response?.data,
-      url: originalRequest.url,
-      method: originalRequest.method,
-      requestData: originalRequest.data
-    });
+    // Log error details in development
+    if (isDevelopment) {
+      console.error('API Error:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        url: originalRequest.url,
+        method: originalRequest.method
+      });
+    }
 
-    // If error is not 400/401 or request was for refresh token, reject
+    // Don't attempt refresh for auth endpoints
     if (
-      error.response?.status !== 400 &&
-      error.response?.status !== 401 ||
+      originalRequest.url?.includes("/api/login") ||
+      originalRequest.url?.includes("/api/register") ||
       originalRequest.url === "/api/refresh"
     ) {
+      return Promise.reject(error);
+    }
+
+    // Only attempt refresh for 401 (Unauthorized)
+    if (error.response?.status !== 401) {
       return Promise.reject(error);
     }
 

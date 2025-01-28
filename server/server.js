@@ -111,6 +111,7 @@ const authenticateToken = (req, res, next) => {
     console.log('Verified token payload:', verified);
     
     if (verified.type !== 'access') {
+      console.log('Invalid token type:', verified.type);
       throw new Error('Invalid token type');
     }
     
@@ -129,10 +130,22 @@ const authenticateToken = (req, res, next) => {
 // Auth routes
 app.post("/api/register", async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const db = getDb();
+    console.log('Register attempt:', {
+      email: req.body?.email,
+      hasPassword: !!req.body?.password,
+      headers: req.headers
+    });
 
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      console.log('Missing credentials:', { email: !!email, password: !!password });
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    const db = getDb();
     if (db.users.some((u) => u.email === email)) {
+      console.log('User already exists:', { email });
       return res.status(400).json({ error: "User already exists" });
     }
 
@@ -149,31 +162,68 @@ app.post("/api/register", async (req, res) => {
     saveDb(db);
 
     const { accessToken, refreshToken } = generateTokens(user.id);
-    console.log('Created token payload:', { userId: user.id, type: 'access' });
+    console.log('Registration successful:', { 
+      userId: user.id,
+      email: user.email,
+      tokenType: 'access'
+    });
+
     res.json({ accessToken, refreshToken });
   } catch (error) {
-    console.error("Registration error:", error);
+    console.error("Registration error:", {
+      error: error.message,
+      stack: error.stack,
+      body: req.body,
+      headers: req.headers
+    });
     res.status(500).json({ error: "Server error during registration" });
   }
 });
 
 app.post("/api/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const db = getDb();
+    console.log('Login attempt:', {
+      email: req.body?.email,
+      hasPassword: !!req.body?.password,
+      headers: req.headers
+    });
 
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      console.log('Missing credentials:', { email: !!email, password: !!password });
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    const db = getDb();
     const user = db.users.find((u) => u.email === email);
-    if (!user) return res.status(400).json({ error: "User not found" });
+    
+    if (!user) {
+      console.log('User not found:', { email });
+      return res.status(400).json({ error: "User not found" });
+    }
 
     const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword)
+    if (!validPassword) {
+      console.log('Invalid password for user:', { email });
       return res.status(400).json({ error: "Invalid password" });
+    }
 
     const { accessToken, refreshToken } = generateTokens(user.id);
-    console.log('Created token payload:', { userId: user.id, type: 'access' });
+    console.log('Login successful:', { 
+      userId: user.id, 
+      email: user.email,
+      tokenType: 'access'
+    });
+    
     res.json({ accessToken, refreshToken });
   } catch (error) {
-    console.error("Login error:", error);
+    console.error("Login error:", {
+      error: error.message,
+      stack: error.stack,
+      body: req.body,
+      headers: req.headers
+    });
     res.status(500).json({ error: "Server error during login" });
   }
 });
@@ -182,6 +232,7 @@ app.post("/api/refresh", async (req, res) => {
   const { refreshToken } = req.body;
 
   if (!refreshToken) {
+    console.log('Missing refresh token');
     return res.status(400).json({ error: "Refresh token required" });
   }
 
@@ -189,10 +240,16 @@ app.post("/api/refresh", async (req, res) => {
     const verified = jwt.verify(refreshToken, JWT_SECRET);
     
     if (verified.type !== 'refresh') {
+      console.log('Invalid token type for refresh:', verified.type);
       throw new Error('Invalid token type');
     }
 
     const { accessToken, refreshToken: newRefreshToken } = generateTokens(verified.userId);
+    console.log('Token refresh successful:', {
+      userId: verified.userId,
+      tokenType: 'refresh'
+    });
+    
     res.json({ accessToken, refreshToken: newRefreshToken });
   } catch (error) {
     console.error("Token refresh error:", error);
