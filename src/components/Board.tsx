@@ -18,6 +18,7 @@ interface BoardProps {
   onAddTask: (title: string, columnId: TaskStatus) => Promise<void>;
   onAddList: (title: string) => Promise<void>;
   onDelete: (taskId: string) => Promise<void>;
+  onEdit: (taskId: string, updatedTask: Partial<Task>) => Promise<void>;
 }
 
 /**
@@ -34,6 +35,7 @@ export const Board: React.FC<BoardProps> = ({
   onAddTask,
   onAddList,
   onDelete,
+  onEdit,
 }) => {
   /** Currently dragged task */
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
@@ -160,6 +162,7 @@ export const Board: React.FC<BoardProps> = ({
                       columnId={column.id}
                       onDragStart={handleDragStart}
                       onDelete={onDelete}
+                      onEdit={onEdit}
                     />
                   ) : null;
                 })}
@@ -188,6 +191,7 @@ export const Board: React.FC<BoardProps> = ({
             columnId={dragStartColumn || ""}
             isDragging={true}
             onDelete={onDelete}
+            onEdit={onEdit}
           />
         </div>
       )}

@@ -76,7 +76,7 @@ axiosInstance.interceptors.response.use(
       data: error.response?.data,
       url: originalRequest.url,
       method: originalRequest.method,
-      errorCode: error.response?.data?.code,
+      errorCode: (error.response?.data as { code?: string })?.code,
       timestamp: new Date().toISOString()
     });
 

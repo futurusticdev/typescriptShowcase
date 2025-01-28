@@ -127,6 +127,33 @@ function App() {
     }
   };
 
+  const handleEditTask = async (taskId: string, updatedTask: Partial<Task>) => {
+    try {
+      // Optimistic update
+      setBoard((prev) => {
+        if (!prev) return prev;
+        const newBoard = {
+          ...prev,
+          tasks: {
+            ...prev.tasks,
+            [taskId]: {
+              ...prev.tasks[taskId],
+              ...updatedTask,
+              updatedAt: new Date(),
+            },
+          },
+        };
+        return newBoard;
+      });
+
+      await updateTask(taskId, updatedTask);
+    } catch (error) {
+      setError('Failed to update task');
+      // Revert optimistic update
+      fetchTasks();
+    }
+  };
+
   const handleDeleteTask = async (taskId: string) => {
     try {
       // Optimistic update
@@ -314,6 +341,7 @@ function App() {
           onAddTask={handleQuickAddTask}
           onAddList={handleAddList}
           onDelete={handleDeleteTask}
+          onEdit={handleEditTask}
         />
       </main>
 
