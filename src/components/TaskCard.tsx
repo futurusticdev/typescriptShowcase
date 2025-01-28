@@ -1,6 +1,15 @@
 import React from "react";
 import { Task } from "../types/interfaces";
 
+/**
+ * Props for the TaskCard component
+ * @interface TaskCardProps
+ * @property {Task} task - The task data to display
+ * @property {string} columnId - ID of the column containing this task
+ * @property {boolean} [isDragging] - Whether the task is currently being dragged
+ * @property {function} [onDelete] - Optional callback to delete the task
+ * @property {function} [onDragStart] - Optional callback to initiate drag operation
+ */
 interface TaskCardProps {
   task: Task;
   columnId: string;
@@ -9,6 +18,24 @@ interface TaskCardProps {
   onDragStart?: (e: React.MouseEvent, task: Task, columnId: string) => void;
 }
 
+/**
+ * TaskCard component that displays a draggable task card with task details
+ * Supports drag and drop functionality when integrated with the Board component
+ *
+ * @component
+ * @param {TaskCardProps} props - The component props
+ * @returns {JSX.Element} Rendered TaskCard component
+ *
+ * @example
+ * ```tsx
+ * <TaskCard
+ *   task={taskData}
+ *   columnId="todo"
+ *   onDragStart={handleDragStart}
+ *   onDelete={handleDelete}
+ * />
+ * ```
+ */
 export const TaskCard: React.FC<TaskCardProps> = ({
   task,
   columnId,
@@ -16,6 +43,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   onDelete,
   onDragStart
 }) => {
+  /**
+   * Color mapping for different priority levels
+   * Uses semi-transparent colors for a subtle visual hierarchy
+   */
   const priorityColors = {
     low: "bg-blue-500/20",
     medium: "bg-yellow-500/20",
@@ -39,15 +70,18 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       }}
     >
       <div className="flex flex-col gap-2">
+        {/* Task Title */}
         <h4 className="text-sm font-medium text-white group-hover:text-white/90">
           {task.title}
         </h4>
+        {/* Optional Task Description */}
         {task.description && (
           <p className="text-xs text-white/60 group-hover:text-white/70">
             {task.description}
           </p>
         )}
         <div className="flex flex-col gap-2">
+          {/* Priority and Due Date Row */}
           <div className="flex items-center gap-2">
             <span
               className={`px-2 py-0.5 rounded text-xs font-medium ${
@@ -62,6 +96,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               </span>
             )}
           </div>
+          {/* Delete Button */}
           {onDelete && (
             <button
               onClick={(e) => {

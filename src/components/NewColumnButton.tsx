@@ -1,13 +1,40 @@
 import React, { useState } from 'react';
 
+/**
+ * Props for the NewColumnButton component
+ * @interface NewColumnButtonProps
+ * @property {function} onAdd - Callback function called when a new column is added
+ * with the column title as parameter
+ */
 interface NewColumnButtonProps {
   onAdd: (title: string) => void;
 }
 
+/**
+ * NewColumnButton component that provides UI for adding new columns to the board
+ * Toggles between a button and an input form for creating new columns
+ *
+ * @component
+ * @param {NewColumnButtonProps} props - The component props
+ * @returns {JSX.Element} Rendered NewColumnButton component
+ *
+ * @example
+ * ```tsx
+ * <NewColumnButton onAdd={(title) => handleNewColumn(title)} />
+ * ```
+ */
 export const NewColumnButton: React.FC<NewColumnButtonProps> = ({ onAdd }) => {
+  /** State to track if the input form is visible */
   const [isAdding, setIsAdding] = useState(false);
+  /** State to track the new column title input value */
   const [title, setTitle] = useState('');
 
+  /**
+   * Handles form submission for creating a new column
+   * Validates the title and calls onAdd if valid
+   * 
+   * @param {React.FormEvent} e - Form submission event
+   */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (title.trim()) {
@@ -17,6 +44,7 @@ export const NewColumnButton: React.FC<NewColumnButtonProps> = ({ onAdd }) => {
     }
   };
 
+  // Render input form when adding a new column
   if (isAdding) {
     return (
       <div className="flex-shrink-0 w-72 bg-white/10 dark:bg-black/20 backdrop-blur-lg rounded-xl shadow-lg p-3">
@@ -52,10 +80,12 @@ export const NewColumnButton: React.FC<NewColumnButtonProps> = ({ onAdd }) => {
     );
   }
 
+  // Render add column button when not in adding state
   return (
     <button
       onClick={() => setIsAdding(true)}
       className="flex-shrink-0 w-72 h-[50px] bg-white/10 dark:bg-black/20 hover:bg-white/20 dark:hover:bg-black/30 backdrop-blur-lg rounded-xl shadow-lg transition-colors flex items-center justify-center group"
+      aria-label="Add new column"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

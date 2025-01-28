@@ -3,6 +3,15 @@ import { Board as BoardType, Task, TaskStatus, Column } from "../types/interface
 import { TaskCard } from "./TaskCard";
 import { NewColumnButton } from "./NewColumnButton";
 
+/**
+ * Props for the Board component
+ * @interface BoardProps
+ * @property {BoardType} board - The board data containing columns and tasks
+ * @property {function} onTaskMove - Callback when a task is moved between columns
+ * @property {function} onAddTask - Callback to add a new task to a column
+ * @property {function} onAddList - Callback to add a new column to the board
+ * @property {function} onDelete - Callback to delete a task
+ */
 interface BoardProps {
   board: BoardType;
   onTaskMove: (taskId: string, source: string, destination: string) => void;
@@ -11,6 +20,14 @@ interface BoardProps {
   onDelete: (taskId: string) => Promise<void>;
 }
 
+/**
+ * Board component that implements a Kanban-style board with drag and drop functionality
+ * Renders columns of tasks and handles drag-and-drop task movement between columns
+ *
+ * @component
+ * @param {BoardProps} props - The component props
+ * @returns {JSX.Element} Rendered Board component
+ */
 export const Board: React.FC<BoardProps> = ({
   board,
   onTaskMove,
@@ -18,12 +35,23 @@ export const Board: React.FC<BoardProps> = ({
   onAddList,
   onDelete,
 }) => {
+  /** Currently dragged task */
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
+  /** Original DOM rectangle of the dragged task for positioning */
   const [draggedTaskRect, setDraggedTaskRect] = useState<DOMRect | null>(null);
+  /** Offset of mouse position from task element's top-left corner */
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  /** Current mouse position during drag */
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  /** Column ID where the drag started */
   const [dragStartColumn, setDragStartColumn] = useState<string | null>(null);
 
+  /**
+   * Initializes drag operation for a task
+   * @param {React.MouseEvent} e - Mouse event that triggered the drag
+   * @param {Task} task - The task being dragged
+   * @param {string} columnId - ID of the column the task is being dragged from
+   */
   const handleDragStart = (e: React.MouseEvent, task: Task, columnId: string) => {
     e.preventDefault(); // Prevent text selection
     const element = e.currentTarget as HTMLElement;
@@ -41,6 +69,10 @@ export const Board: React.FC<BoardProps> = ({
     });
   };
 
+  /**
+   * Updates task position during drag
+   * @param {MouseEvent} e - Mouse move event
+   */
   const handleDragMove = useCallback((e: MouseEvent) => {
     if (draggedTask) {
       e.preventDefault(); // Prevent text selection during drag
@@ -51,12 +83,18 @@ export const Board: React.FC<BoardProps> = ({
     }
   }, [draggedTask]);
 
+  /**
+   * Handles the end of a drag operation
+   * Calculates closest column and moves task if necessary
+   * @param {MouseEvent} e - Mouse up event
+   */
   const handleDragEnd = useCallback((e: MouseEvent) => {
     if (draggedTask && dragStartColumn) {
       const columns = document.querySelectorAll('[data-column-id]');
       let targetColumn: Element | null = null;
       let closestDistance = Infinity;
 
+      // Find the closest column to the drop position
       columns.forEach(column => {
         const rect = column.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
@@ -79,11 +117,13 @@ export const Board: React.FC<BoardProps> = ({
       }
     }
 
+    // Reset drag state
     setDraggedTask(null);
     setDraggedTaskRect(null);
     setDragStartColumn(null);
   }, [draggedTask, dragStartColumn, onTaskMove]);
 
+  // Set up event listeners for drag operations
   React.useEffect(() => {
     window.addEventListener('mousemove', handleDragMove);
     window.addEventListener('mouseup', handleDragEnd);
@@ -129,6 +169,7 @@ export const Board: React.FC<BoardProps> = ({
         ))}
         <NewColumnButton onAdd={onAddList} />
       </div>
+      {/* Render dragged task preview */}
       {draggedTask && draggedTaskRect && (
         <div
           style={{
