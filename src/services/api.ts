@@ -10,9 +10,16 @@ import {
 /** Base API URL from environment variables, defaults to localhost */
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
+/** Development mode check */
+const isDevelopment = import.meta.env.MODE === 'development';
+
 /** Axios instance with preconfigured baseURL */
 const axiosInstance = axios.create({
   baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  }
 });
 
 /** Flag to track if a token refresh is in progress */
@@ -43,6 +50,15 @@ axiosInstance.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  // Log outgoing requests in development
+  if (isDevelopment) {
+    console.log('Request:', {
+      url: config.url,
+      method: config.method,
+      data: config.data,
+      headers: config.headers
+    });
+  }
   return config;
 });
 
@@ -58,6 +74,15 @@ axiosInstance.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config!;
     
+    // Log error details
+    console.error('API Error:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      url: originalRequest.url,
+      method: originalRequest.method,
+      requestData: originalRequest.data
+    });
+
     // If error is not 400/401 or request was for refresh token, reject
     if (
       error.response?.status !== 400 &&
@@ -78,7 +103,12 @@ axiosInstance.interceptors.response.use(
 
         const response = await axios.post<RefreshResponse>(
           `${API_URL}/api/refresh`,
-          { refreshToken }
+          { refreshToken },
+          {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
         );
 
         const { accessToken, refreshToken: newRefreshToken } = response.data;
@@ -124,11 +154,19 @@ axiosInstance.interceptors.response.use(
  * @throws {AxiosError} When authentication fails
  */
 export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
-  const response = await axiosInstance.post<AuthResponse>("/api/login", credentials);
-  const { accessToken, refreshToken } = response.data;
-  localStorage.setItem("accessToken", accessToken);
-  localStorage.setItem("refreshToken", refreshToken);
-  return response.data;
+  // Log login attempt (without password)
+  console.log('Login attempt:', { email: credentials.email });
+  
+  try {
+    const response = await axiosInstance.post<AuthResponse>("/api/login", credentials);
+    const { accessToken, refreshToken } = response.data;
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("refreshToken", refreshToken);
+    return response.data;
+  } catch (error) {
+    console.error('Login error:', error);
+    throw error;
+  }
 };
 
 /**
@@ -139,11 +177,17 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
  */
 export const register = async (credentials: RegisterCredentials): Promise<AuthResponse> => {
   const { confirmPassword, ...registerPayload } = credentials;
-  const response = await axiosInstance.post<AuthResponse>("/api/register", registerPayload);
-  const { accessToken, refreshToken } = response.data;
-  localStorage.setItem("accessToken", accessToken);
-  localStorage.setItem("refreshToken", refreshToken);
-  return response.data;
+  
+  try {
+    const response = await axiosInstance.post<AuthResponse>("/api/register", registerPayload);
+    const { accessToken, refreshToken } = response.data;
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("refreshToken", refreshToken);
+    return response.data;
+  } catch (error) {
+    console.error('Registration error:', error);
+    throw error;
+  }
 };
 
 /**
