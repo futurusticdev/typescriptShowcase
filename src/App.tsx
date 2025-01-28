@@ -8,7 +8,7 @@ import {
   TaskPriority,
   VALID_STATUSES
 } from "./types/interfaces";
-import { getTasks, createTask, updateTask, deleteTask } from "./services/api";
+import { getTasks, createTask, updateTask, deleteTask, createColumn } from "./services/api";
 import Login from "./components/Login";
 import Register from "./components/Register";
 

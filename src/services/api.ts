@@ -5,6 +5,7 @@ import {
   LoginCredentials,
   RegisterCredentials,
   RefreshResponse,
+  Column,
 } from "../types/interfaces";
 
 /** Base API URL from environment variables, defaults to localhost */
